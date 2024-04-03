@@ -1,7 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
-import cookieParser from 'cookie-parser';
+import * as cookieParser from 'cookie-parser';
+import 'dotenv/config';
 
 const PORT = process.env.PORT || 3001;
 const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${PORT}`;
