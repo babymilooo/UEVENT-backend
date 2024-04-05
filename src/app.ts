@@ -11,7 +11,8 @@ app.use(morgan("dev"));
 app.use(helmet());
 app.use(
   cors({
-    origin: true,
+    credentials: true,
+    origin: process.env.FRONTEND_URL
   })
 );
 app.use(express.json());
