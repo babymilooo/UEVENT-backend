@@ -58,6 +58,6 @@ authRouter.post("/register", async (req, res) => {
   }
 });
 
-authRouter.post("/refreshToken", async (req, res) => {});
+authRouter.post("/refreshToken", async (req, res) => { });
 
 export { authRouter };

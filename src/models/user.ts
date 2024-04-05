@@ -3,23 +3,18 @@ import { emailRegex } from "../helpers/emailRegex";
 
 export interface ISchemaUser {
   _id: string;
-  firstName: string;
-  lastName: string;
+  userName: string;
   email: string;
   emailVerified: boolean;
   passwordHash: string;
 }
 
 const userSchema = new Schema<ISchemaUser>({
-  firstName: {
+  userName: {
     type: String,
-    required: true,
+    required: false,
     trim: true,
-  },
-  lastName: {
-    type: String,
-    required: true,
-    trim: true,
+    default: "user",
   },
   email: {
     type: String,
