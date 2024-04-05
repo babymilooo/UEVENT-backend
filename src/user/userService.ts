@@ -1,8 +1,8 @@
 import * as bcrypt from "bcrypt";
+import "dotenv/config";
 import { emailRegex } from "../helpers/emailRegex";
 import { User } from "../models/user";
 import { IUserDto, IUserUpdateDto } from "../types/user";
-import 'dotenv/config';
 
 export async function createUser(userDto: IUserDto) {
   if (!emailRegex.test(userDto.email)) {
