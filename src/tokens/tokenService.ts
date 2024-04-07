@@ -30,7 +30,10 @@ export async function signToken(
 export async function verifyToken(type: ETokenType, token: string) {
   const config = getConfig(type);
   if (!config.secret) throw new Error("Token Secret not set");
-  return jwt.verify(token, config.secret);
+  const decoded = jwt.verify(token, config.secret);
+  if (typeof decoded === "string")
+    throw new Error("Unexpected token structure");
+  return decoded;
 }
 
 export async function signAuthTokens(payload: any): Promise<IAuthTokens> {
@@ -57,4 +60,24 @@ export async function deleteAuthTokensFromCookies(
   res.clearCookie("accessToken", httponlyCookiesOption);
 
   return true;
+}
+
+export async function setAuthTokens(res: Response, user: any) {
+  const tokenPayload = {
+    id: user._id,
+    timestamp: new Date().toISOString(),
+  };
+  const tokens = await signAuthTokens(tokenPayload);
+  await setAuthTokensToCookies(res, tokens);
+}
+
+export async function setAccessToken(user: any, refreshToken: string): Promise<IAuthTokens> {
+  const payload = {
+    id: user._id,
+    timestamp: new Date().toISOString(),
+  };
+  return {
+    accessToken: await signToken(ETokenType.Access, payload),
+    refreshToken: refreshToken,
+  };
 }

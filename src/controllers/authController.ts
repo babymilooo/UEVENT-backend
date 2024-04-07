@@ -6,10 +6,16 @@ import {
   deleteAuthTokensFromCookies,
   setAuthTokensToCookies,
   signAuthTokens,
+  setAuthTokens,
+  verifyToken,
+  setAccessToken
 } from "../tokens/tokenService";
 import { ILoginDto, IRegisterDto } from "../types/auth";
-import { createUser, findUserByEmail } from "../user/userService";
+import { createUser, findUserByEmail, 
+        handleSpotifyAuthorization, findOrCreateUser,
+        findUserById } from "../user/userService";
 import { spotifyApi } from "../config/spotifyConfig";
+import { ETokenType } from "../types/token";
 
 const authRouter = express.Router();
 
@@ -29,19 +35,20 @@ authRouter.post("/login", async (req, res) => {
     if (!bcrypt.compareSync(loginInfo.password, user.passwordHash))
       return res.status(403).json(errorMessageObj("Invalid password"));
 
-    const tokenPayload = {
-      id: user._id,
-      timestamp: new Date().toISOString(),
-    };
+    // const tokenPayload = {
+    //   id: user._id,
+    //   timestamp: new Date().toISOString(),
+    // };
 
-    const tokens = await signAuthTokens(tokenPayload);
-    await setAuthTokensToCookies(res, tokens);
+    // const tokens = await signAuthTokens(tokenPayload);
+    // await setAuthTokensToCookies(res, tokens);
+    await setAuthTokens(res, user);
+
     const returnObj: any = user.toObject();
     delete returnObj.passwordHash;
     return res.status(200).json(returnObj);
   } catch (error) {
     console.error(error);
-
     return res.status(400).json(errorMessageObj("Invalid data"));
   }
 });
@@ -56,44 +63,18 @@ authRouter.get("/spotify-auth", (req, res) => {
 
 authRouter.get("/callback", async (req, res) => {
   try {
-    console.log("1111111");
     const code = typeof req.query.code === "string" ? req.query.code : null;
-    const state = typeof req.query.state === "string" ? req.query.state : null;
-    console.log(code);
     if (!code) return res.status(400).json(errorMessageObj("Invalid request"));
 
-    const data: any = await spotifyApi.authorizationCodeGrant(code);
-    console.log(data);
-    const refreshToken = data.body.refresh_token;
-    console.log(refreshToken);
-    spotifyApi.setAccessToken(data.body.access_token);
-    spotifyApi.setRefreshToken(refreshToken);
+    const { refresh_token, access_token } = await handleSpotifyAuthorization(spotifyApi, code);
 
     const me = await spotifyApi.getMe();
     const { email, id } = me.body;
 
-    let user = await findUserByEmail(email);
+    let user = await findOrCreateUser(spotifyApi, email, id, refresh_token);
 
-    if (!user) {
-      console.log("===========");
-      user = await createUser({ email, spotifyId: id, spotifyRefreshToken: refreshToken, isRegisteredViaSpotify: true });
-    } else {
-      const userRefreshToken = user.spotifyRefreshToken;
-      if (userRefreshToken) {
-        spotifyApi.setRefreshToken(userRefreshToken);
-        const refreshedData: any = await spotifyApi.refreshAccessToken();
-        const refreshedAccessToken = refreshedData.body.access_token;
-        spotifyApi.setAccessToken(refreshedAccessToken);
-      }
-    }
+    await setAuthTokens(res, user);
 
-    const tokenPayload = {
-      id: user._id,
-      timestamp: new Date().toISOString(),
-    };
-
-    const tokens = await signAuthTokens(tokenPayload);
-    await setAuthTokensToCookies(res, tokens);
     const returnObj: any = user.toObject();
     delete returnObj.passwordHash || '';
     return res.status(200).json(returnObj);
@@ -103,8 +84,6 @@ authRouter.get("/callback", async (req, res) => {
     return res.status(400).json(errorMessageObj("Invalid data"));
   }
 });
-
-
 
 
 authRouter.post("/logout", authGuard, async (req, res) => {
@@ -124,6 +103,24 @@ authRouter.post("/register", async (req, res) => {
   }
 });
 
-authRouter.post("/refreshToken", async (req, res) => { });
+authRouter.post("/refreshToken", async (req, res) => {
+  try {
+    const { refreshToken } = req.cookies; 
+    if (!refreshToken) return res.status(400).json(errorMessageObj("No refresh token providedt"));
+
+    const decoded = await verifyToken(ETokenType.Refresh, refreshToken);
+    if (!decoded) return res.status(400).json(errorMessageObj("Invalid refresh token"));
+
+    const user = await findUserById(decoded.id);
+    if (!user) return res.status(403).json(errorMessageObj("User not found"));
+
+    const tokens = await setAccessToken(user, refreshToken);
+    await setAuthTokensToCookies(res, tokens);
+    res.status(200).send();
+  } catch (error) {
+    console.error("Refresh Token error:", error);
+    return res.status(400).json(errorMessageObj("Invalid data"));
+  }
+});
 
 export { authRouter };

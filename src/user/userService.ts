@@ -54,3 +54,34 @@ export async function updateUser(id: string, updateData: IUserUpdateDto) {
 export async function deleteUser(id: string) {
   return await User.findByIdAndDelete(id).exec();
 }
+
+
+export async function handleSpotifyAuthorization(spotifyApi: any, code: string) {
+  const data = await spotifyApi.authorizationCodeGrant(code);
+  spotifyApi.setAccessToken(data.body.access_token);
+  spotifyApi.setRefreshToken(data.body.refresh_token);
+  return data.body;
+}
+
+export async function findOrCreateUser(spotifyApi: any, email: string, id: string, refreshToken: string) {
+  let user = await findUserByEmail(email);
+  if (!user)
+    user = await createUser({ email, spotifyId: id, 
+                              spotifyRefreshToken: refreshToken, 
+                              isRegisteredViaSpotify: true });
+  else {
+    let userRefreshToken = user.spotifyRefreshToken;
+    if(userRefreshToken !== refreshToken) {
+      userRefreshToken = refreshToken;
+      user.spotifyRefreshToken = userRefreshToken;
+      await user.save();
+    }
+    if (userRefreshToken) {
+      spotifyApi.setRefreshToken(userRefreshToken);
+      const refreshedData: any = await spotifyApi.refreshAccessToken();
+      const refreshedAccessToken = refreshedData.body.access_token;
+      spotifyApi.setAccessToken(refreshedAccessToken);
+    }
+  }
+  return user
+}

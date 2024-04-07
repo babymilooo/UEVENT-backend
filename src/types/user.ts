@@ -1,12 +1,17 @@
 export interface IUserDto {
   userName?: string;
-  spotifyId?: string;
   email: string;
   password?: string;
-  spotifyRefreshToken?: string;
+  spotifyId?: string;
   isRegisteredViaSpotify?: boolean;
+  spotifyRefreshToken?: string;
+  emailVerified?: boolean;
+  role?: string;
+  profilePicture?: string;
 }
 
 export interface IUserUpdateDto {
-  userName: string;
+  userName?: string;
+  password?: string;
+  profilePicture?: string;
 }

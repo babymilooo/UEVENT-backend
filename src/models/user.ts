@@ -10,6 +10,8 @@ export interface ISchemaUser {
   spotifyId?: string;
   isRegisteredViaSpotify?: boolean;
   spotifyRefreshToken?: string;
+  role: string;
+  profilePicture?: string;
 }
 
 const userSchema = new Schema<ISchemaUser>({
@@ -52,6 +54,17 @@ const userSchema = new Schema<ISchemaUser>({
     required: false,
     trim: true,
   },
+  role: {
+    type: String,
+    required: true,
+    enum: ["user", "admin"], 
+    default: "user", 
+  },
+  profilePicture: {
+    type: String,
+    required: false,
+    trim: true,
+  }
 });
 
 export const User = model<ISchemaUser>("User", userSchema);
