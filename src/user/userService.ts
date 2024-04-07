@@ -15,7 +15,7 @@ export async function createUser(userDto: IUserDto) {
   const userObj: any = {
     ...userDto,
     passwordHash: bcrypt.hashSync(
-      userDto.password,
+      userDto.password || '',
       Number(process.env.SALT_ROUNDS)
     ),
   };
