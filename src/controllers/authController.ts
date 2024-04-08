@@ -13,7 +13,7 @@ import {
 import { ILoginDto, IRegisterDto } from "../types/auth";
 import { createUser, findUserByEmail, 
         handleSpotifyAuthorization, findOrCreateUser,
-        findUserById } from "../user/userService";
+        findUserById } from "../services/userService";
 import { spotifyApi } from "../config/spotifyConfig";
 import { ETokenType } from "../types/token";
 

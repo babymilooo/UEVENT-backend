@@ -4,6 +4,7 @@ import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 import { authRouter } from "./controllers/authController";
+import { artistRouter } from "./controllers/artistsController";
 
 const app = express();
 
@@ -20,5 +21,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use('/auth', authRouter);
+app.use('/info', artistRouter);
 
 export default app;
