@@ -3,8 +3,8 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
-import { authRouter } from "./controllers/authController";
-import { artistRouter } from "./controllers/artistsController";
+import { authRouter } from "./routers/authRouter";
+import { artistRouter } from "./routers/artistsRouter";
 
 const app = express();
 
@@ -21,6 +21,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use('/auth', authRouter);
-app.use('/info', artistRouter);
+app.use('/artists', artistRouter);
 
 export default app;

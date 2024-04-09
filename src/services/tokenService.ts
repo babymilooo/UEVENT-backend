@@ -6,6 +6,7 @@ import {
 } from "../config/auth";
 import { ETokenType, IAuthTokens } from "../types/token";
 import { Response } from "express";
+import { getRefreshTokenForUser } from "./userService";
 
 export function getConfig(type: ETokenType) {
   switch (type) {
@@ -71,9 +72,9 @@ export async function setAuthTokens(res: Response, user: any) {
   await setAuthTokensToCookies(res, tokens);
 }
 
-export async function setAccessToken(user: any, refreshToken: string): Promise<IAuthTokens> {
+export async function setAccessToken(userId: string, refreshToken: string): Promise<IAuthTokens> {
   const payload = {
-    id: user._id,
+    id: userId,
     timestamp: new Date().toISOString(),
   };
   return {
@@ -85,17 +86,33 @@ export async function setAccessToken(user: any, refreshToken: string): Promise<I
 export async function refreshSpotifyAccessToken(spotifyApi: any, refreshToken: string) {
   try {
     spotifyApi.setRefreshToken(refreshToken);
-
     const data = await spotifyApi.refreshAccessToken();
-    const { access_token, } = data.body;
+    const { access_token } = data.body;
     spotifyApi.setAccessToken(access_token);
-    return access_token
+    return access_token;
   } catch (error) {
-    console.error("Failed to refresh Spotify access token:", error);
     throw new Error("Failed to refresh Spotify access token");
   }
 }
 
 export async function setAccessTokenSpotify(res: Response, access_token: string) {
   res.cookie("access_token_spotify", access_token, httponlyCookiesOption)
+}
+
+export async function updateAccessTokenForUser(userId: string, spotifyApi: any, res: Response) {
+  try {
+    const refreshToken = await getRefreshTokenForUser(userId);
+    if (!refreshToken)
+      throw new Error("Refresh token not found");
+
+    const newAccessToken = await refreshSpotifyAccessToken(spotifyApi, refreshToken);
+    if (!newAccessToken)
+      throw new Error("Failed to refresh access token");
+
+    await setAccessTokenSpotify(res, newAccessToken);
+
+    return newAccessToken;
+  } catch (error) {
+    throw new Error("Failed to refresh Spotify access token");
+  }
 }

@@ -16,10 +16,9 @@ export async function getAllFollowedArtists(spotifyApi: any) {
       data = await spotifyApi.getFollowedArtists({ limit: 50, after: data.body.artists.cursors.after });
       artists.push(...data.body.artists.items);
     }
-
     return artists;
   } catch (error) {
-    console.error("Failed to fetch followed artists:", error);
+
     throw new Error("Failed to fetch followed artists");
   }
 }

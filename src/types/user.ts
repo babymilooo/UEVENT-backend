@@ -1,7 +1,7 @@
 export interface IUserDto {
   userName?: string;
   email: string;
-  password?: string;
+  password: string;
   // spotifyId?: string;
   isRegisteredViaSpotify?: boolean;
   spotifyRefreshToken?: string;

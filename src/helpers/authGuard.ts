@@ -4,6 +4,7 @@ import { errorMessageObj } from "./errorMessageObj";
 import { verifyToken } from "../services/tokenService";
 import { ETokenType } from "../types/token";
 
+
 export async function authGuard(
   req: Request | any,
   res: Response,

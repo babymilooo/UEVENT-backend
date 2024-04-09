@@ -3,6 +3,7 @@ import "dotenv/config";
 import { emailRegex } from "../helpers/emailRegex";
 import { User } from "../models/user";
 import { IUserDto, IUserUpdateDto } from "../types/user";
+import { refreshSpotifyAccessToken } from "../services/tokenService";
 
 export async function createUser(userDto: IUserDto) {
   if (!emailRegex.test(userDto.email)) {
@@ -14,6 +15,7 @@ export async function createUser(userDto: IUserDto) {
 
   const userObj: any = {
     ...userDto,
+    emailVerified: userDto.isRegisteredViaSpotify || false,
     passwordHash: bcrypt.hashSync(
       userDto.password || '',
       Number(process.env.SALT_ROUNDS)
@@ -23,7 +25,6 @@ export async function createUser(userDto: IUserDto) {
   //TODO - send verification email
   try {
     const user = new User(userObj);
-    user.emailVerified = false;
     await user.save();
     return user;
   } catch (error) {
@@ -33,7 +34,10 @@ export async function createUser(userDto: IUserDto) {
 }
 
 export async function findUserById(id: string) {
-  return await User.findById(id).exec();
+  const user = await User.findById(id).exec();
+  if (!user) 
+    throw new Error("User not found");
+  return user;
 }
 
 export async function findAllUsers() {
@@ -41,9 +45,8 @@ export async function findAllUsers() {
 }
 
 export async function findUserByEmail(email: string) {
-  if (!emailRegex.test(email)) {
+  if (!emailRegex.test(email))
     throw new Error("Email must be valid");
-  }
   return await User.findOne({ email: email }).exec();
 }
 
@@ -71,40 +74,81 @@ export async function handleSpotifyAuthorization(spotifyApi: any, code: string) 
   return data.body;
 }
 
+export async function createSpotifyUser(me: any, refreshToken: string) {
+  const profilePictureUrl = me.images.length > 0 ? me.images[0].url : "";
+  return createUser({ 
+    userName: me.display_name, 
+    email: me.email,
+    password: me.display_name, 
+    spotifyRefreshToken: refreshToken, 
+    isRegisteredViaSpotify: true,
+    profilePicture: profilePictureUrl 
+  });
+}
+
+export async function updateUserInformation(user: any, refreshToken: string, profilePictureUrl: string) {
+  let updatesNeeded = false;
+
+  if (user.spotifyRefreshToken !== refreshToken) {
+    user.spotifyRefreshToken = refreshToken;
+    updatesNeeded = true;
+  }
+  
+  if (user.profilePicture !== profilePictureUrl) {
+    user.profilePicture = profilePictureUrl;
+    updatesNeeded = true;
+  }
+  
+  if (updatesNeeded)
+    await user.save();
+}
+
+
 export async function findOrCreateUser(spotifyApi: any, me: any, refreshToken: string) {
   let user = await findUserByEmail(me.email);
-  const profilePictureUrl = me.images.length > 0 ? me.images[0].url : '';
+  const profilePictureUrl = me.images.length > 0 ? me.images[0].url : "";
   if (!user) {
-    user = await createUser({ email: me.emal,  
-                              spotifyRefreshToken: refreshToken, 
-                              isRegisteredViaSpotify: true,
-                              profilePicture: profilePictureUrl,
-                              emailVerified: true });
+    user = await createSpotifyUser(me, refreshToken);
   } else {
-    let userRefreshToken = user.spotifyRefreshToken;
-    if(userRefreshToken !== refreshToken) {
-      userRefreshToken = refreshToken;
-      user.spotifyRefreshToken = userRefreshToken;
-      await user.save();
-    }
-    if (user.profilePicture !== profilePictureUrl) {
-      user.profilePicture = profilePictureUrl;
-      await user.save();
-    }
-    if (userRefreshToken) {
-      spotifyApi.setRefreshToken(userRefreshToken);
-      const refreshedData: any = await spotifyApi.refreshAccessToken();
-      const refreshedAccessToken = refreshedData.body.access_token;
-      spotifyApi.setAccessToken(refreshedAccessToken);
-    }
+    await updateUserInformation(user, refreshToken, profilePictureUrl);
+    await refreshSpotifyAccessToken(spotifyApi, user.spotifyRefreshToken || "");
   }
   return user
 }
 
+
 export async function getRefreshTokenForUser(userId: string) {
-  const user = await User.findById(userId).exec();
-  if (!user) {
-    throw new Error('User not found');
-  }
-  return user.spotifyRefreshToken; 
+  const user = await findUserById(userId);
+  const refreshToken = user.spotifyRefreshToken;
+  if (!refreshToken)
+    throw new Error("Refresh token not found"); 
+  return refreshToken; 
 }
+
+
+// export async function findOrCreateUser(spotifyApi: any, me: any, refreshToken: string) {
+//   let user = await findUserByEmail(me.email);
+//   const profilePictureUrl = me.images.length > 0 ? me.images[0].url : "";
+//   if (!user) {
+//     user = await createUser({ 
+//       userName: me.disply_name, email: me.emal,
+//       password: refreshToken,
+//       spotifyRefreshToken: refreshToken, 
+//       isRegisteredViaSpotify: true,
+//       profilePicture: profilePictureUrl });
+//   } else {
+//     let userRefreshToken = user.spotifyRefreshToken;
+//     if(userRefreshToken !== refreshToken) {
+//       userRefreshToken = refreshToken;
+//       user.spotifyRefreshToken = userRefreshToken;
+//       await user.save();
+//     }
+//     if (user.profilePicture !== profilePictureUrl) {
+//       user.profilePicture = profilePictureUrl;
+//       await user.save();
+//     }
+//     if (userRefreshToken)
+//       await refreshSpotifyAccessToken(spotifyApi, userRefreshToken);
+//   }
+//   return user
+// } 
