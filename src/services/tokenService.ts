@@ -58,7 +58,7 @@ export async function deleteAuthTokensFromCookies(
 ): Promise<boolean> {
   res.clearCookie("refreshToken", httponlyCookiesOption);
   res.clearCookie("accessToken", httponlyCookiesOption);
-
+  res.clearCookie("access_token_spotify", httponlyCookiesOption);
   return true;
 }
 

@@ -13,9 +13,11 @@ import {
   refreshSpotifyAccessToken
 } from "../services/tokenService";
 import { ILoginDto, IRegisterDto } from "../types/auth";
-import { createUser, findUserByEmail, 
-        handleSpotifyAuthorization, findOrCreateUser,
-        findUserById, removeSensitiveData } from "../services/userService";
+import {
+  createUser, findUserByEmail,
+  handleSpotifyAuthorization, findOrCreateUser,
+  findUserById, removeSensitiveData
+} from "../services/userService";
 import { spotifyApi } from "../config/spotifyConfig";
 import { ETokenType } from "../types/token";
 
@@ -56,9 +58,9 @@ authRouter.post("/login", async (req, res) => {
 
 authRouter.get("/spotify-auth", (req, res) => {
   const scopes = [
-    "user-read-private", 
+    "user-read-private",
     "user-read-email",
-    "user-follow-read", 
+    "user-follow-read",
     "user-follow-modify"
   ];
   const state = typeof req.query.state === 'string' ? req.query.state : '';
@@ -106,7 +108,7 @@ authRouter.post("/register", async (req, res) => {
 
 authRouter.post("/refreshToken", async (req, res) => {
   try {
-    const { refreshToken } = req.cookies; 
+    const { refreshToken } = req.cookies;
     if (!refreshToken) return res.status(400).json(errorMessageObj("No refresh token providedt"));
 
     const decoded = await verifyToken(ETokenType.Refresh, refreshToken);
@@ -115,7 +117,7 @@ authRouter.post("/refreshToken", async (req, res) => {
     const user = await findUserById(decoded.id);
     if (!user) return res.status(403).json(errorMessageObj("User not found"));
 
-    if(user.isRegisteredViaSpotify && user.spotifyRefreshToken) {
+    if (user.isRegisteredViaSpotify && user.spotifyRefreshToken) {
       try {
         const newAccessToken = await refreshSpotifyAccessToken(spotifyApi, user.spotifyRefreshToken);
         await setAccessTokenSpotify(res, newAccessToken);
@@ -127,7 +129,7 @@ authRouter.post("/refreshToken", async (req, res) => {
 
     const tokens = await setAccessToken(user, refreshToken);
     await setAuthTokensToCookies(res, tokens);
-    return res.status(200).send();
+    return res.status(200).json(await removeSensitiveData(user));
   } catch (error) {
     console.error("Refresh Token error:", error);
     return res.status(400).json(errorMessageObj("Invalid data"));
