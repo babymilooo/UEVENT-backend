@@ -8,12 +8,14 @@ import {
   signAuthTokens,
   setAuthTokens,
   verifyToken,
-  setAccessToken
-} from "../tokens/tokenService";
+  setAccessToken,
+  setAccessTokenSpotify,
+  refreshSpotifyAccessToken
+} from "../services/tokenService";
 import { ILoginDto, IRegisterDto } from "../types/auth";
 import { createUser, findUserByEmail, 
         handleSpotifyAuthorization, findOrCreateUser,
-        findUserById } from "../services/userService";
+        findUserById, removeSensitiveData } from "../services/userService";
 import { spotifyApi } from "../config/spotifyConfig";
 import { ETokenType } from "../types/token";
 
@@ -43,10 +45,7 @@ authRouter.post("/login", async (req, res) => {
     // const tokens = await signAuthTokens(tokenPayload);
     // await setAuthTokensToCookies(res, tokens);
     await setAuthTokens(res, user);
-
-    const returnObj: any = user.toObject();
-    delete returnObj.passwordHash;
-    return res.status(200).json(returnObj);
+    return res.status(200).json(await removeSensitiveData(user));
   } catch (error) {
     console.error(error);
     return res.status(400).json(errorMessageObj("Invalid data"));
@@ -56,7 +55,12 @@ authRouter.post("/login", async (req, res) => {
 
 
 authRouter.get("/spotify-auth", (req, res) => {
-  const scopes = ["user-read-private", "user-read-email"];
+  const scopes = [
+    "user-read-private", 
+    "user-read-email",
+    "user-follow-read", 
+    "user-follow-modify"
+  ];
   const state = typeof req.query.state === 'string' ? req.query.state : '';
   res.send(spotifyApi.createAuthorizeURL(scopes, state));
 });
@@ -69,16 +73,13 @@ authRouter.get("/callback", async (req, res) => {
     const { refresh_token, access_token } = await handleSpotifyAuthorization(spotifyApi, code);
 
     const me = await spotifyApi.getMe();
-    const { email, id } = me.body;
+    // const { email, id } = me.body;
 
-    let user = await findOrCreateUser(spotifyApi, email, id, refresh_token);
+    let user = await findOrCreateUser(spotifyApi, me.body, refresh_token);
 
     await setAuthTokens(res, user);
-
-    const returnObj: any = user.toObject();
-    delete returnObj.passwordHash || '';
-    return res.status(200).json(returnObj);
-
+    await setAccessTokenSpotify(res, access_token);
+    return res.status(200).json(await removeSensitiveData(user));
   } catch (error) {
     console.error("Callback processing error:", error);
     return res.status(400).json(errorMessageObj("Invalid data"));
@@ -114,9 +115,19 @@ authRouter.post("/refreshToken", async (req, res) => {
     const user = await findUserById(decoded.id);
     if (!user) return res.status(403).json(errorMessageObj("User not found"));
 
+    if(user.isRegisteredViaSpotify && user.spotifyRefreshToken) {
+      try {
+        const newAccessToken = await refreshSpotifyAccessToken(spotifyApi, user.spotifyRefreshToken);
+        await setAccessTokenSpotify(res, newAccessToken);
+      } catch (error) {
+        console.error(error);
+        res.status(400).json(errorMessageObj("Failed to refresh Spotify access token"));
+      }
+    }
+
     const tokens = await setAccessToken(user, refreshToken);
     await setAuthTokensToCookies(res, tokens);
-    res.status(200).send();
+    return res.status(200).send();
   } catch (error) {
     console.error("Refresh Token error:", error);
     return res.status(400).json(errorMessageObj("Invalid data"));

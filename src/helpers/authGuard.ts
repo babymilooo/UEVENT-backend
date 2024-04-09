@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { extractTokens } from "./extractTokens";
 import { errorMessageObj } from "./errorMessageObj";
-import { verifyToken } from "../tokens/tokenService";
+import { verifyToken } from "../services/tokenService";
 import { ETokenType } from "../types/token";
 
 export async function authGuard(
