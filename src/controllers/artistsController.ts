@@ -47,6 +47,31 @@ export async function getArtistById(req: Request, res: Response) {
   }
 }
 
+export async function getArtistTopTracks(req: Request, res: Response) {
+  try {
+    const artistId = req.params.artistId;
+    const countryCode = typeof req.query.countryCode === 'string' ? req.query.countryCode : 'UA';
+    
+    if (!artistId)
+      return res.status(400).json(errorMessageObj("Artist ID is not provided"));
+
+    const access_token = await handleSpotifyClientCredentials(spotifyApi);
+    if (!access_token)
+      return res.status(500).json(errorMessageObj("Failed to retrieve access token"));
+
+    spotifyApi.setAccessToken(access_token);
+
+    const result = await spotifyApi.getArtistTopTracks(artistId, countryCode);
+    if (result.body && result.body.tracks) res.status(200).json(result.body.tracks);
+    else 
+      res.status(404).json(errorMessageObj("Top tracks not found"));
+  } catch (error) {
+    res.status(500).json(errorMessageObj("Error fetching artist's top tracks by ID"));
+  }
+}
+
+
+
 export async function getArtistsByIds(req: Request, res: Response) {
   try {
     const artistIds = req.body.artistIds;
