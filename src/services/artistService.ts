@@ -7,7 +7,7 @@ export async function handleSpotifyClientCredentials(spotifyApi: any) {
 
 export async function getAllFollowedArtists(spotifyApi: any) {
   try {
-    let artists = [];
+    const artists = [];
     let data = await spotifyApi.getFollowedArtists({ limit: 50 });
     artists.push(...data.body.artists.items);
     while (data.body.artists.next) {

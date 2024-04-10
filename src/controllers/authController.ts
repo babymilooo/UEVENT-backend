@@ -9,20 +9,26 @@ import {
   verifyToken,
   setAccessToken,
   setAccessTokenSpotify,
-  updateAccessTokenForUser
+  updateAccessTokenForUser,
 } from "../services/tokenService";
 import { ILoginDto, IRegisterDto } from "../types/auth";
-import { 
+import {
   createUser,
-  findUserByEmail, 
-  handleSpotifyAuthorization, 
+  findUserByEmail,
+  handleSpotifyAuthorization,
   findOrCreateUser,
-  findUserById, 
-  removeSensitiveData 
+  findUserById,
+  removeSensitiveData,
+  createHashPassword,
 } from "../services/userService";
 import { spotifyApi } from "../config/spotifyConfig";
 import { ETokenType } from "../types/token";
+import { User } from "../models/user";
+import "dotenv/config";
+import { sendPasswordResetEmail } from "../services/emailService";
+import { JwtPayload } from "jsonwebtoken";
 
+const FRONTEND_URL = process.env.FRONTEND_URL;
 
 export async function login(req: Request, res: Response) {
   try {
@@ -32,11 +38,18 @@ export async function login(req: Request, res: Response) {
 
     if (!user) return res.status(404).json(errorMessageObj("User not found"));
 
-    if (typeof user.passwordHash !== "string" || typeof loginInfo.password !== "string")
-      return res.status(400).json(errorMessageObj("Email and password are required"));
+    if (
+      typeof user.passwordHash !== "string" ||
+      typeof loginInfo.password !== "string"
+    )
+      return res
+        .status(400)
+        .json(errorMessageObj("Email and password are required"));
 
     if (!bcrypt.compareSync(loginInfo.password, user.passwordHash))
-      return res.status(403).json(errorMessageObj("Email or password is invalid"));
+      return res
+        .status(403)
+        .json(errorMessageObj("Email or password is invalid"));
 
     // const tokenPayload = {
     //   id: user._id,
@@ -64,16 +77,15 @@ export async function register(req: Request, res: Response) {
   }
 }
 
-
-
 export async function loginViaSpotify(req: Request, res: Response) {
   const scopes = [
-    "user-read-private", 
+    "user-read-private",
     "user-read-email",
-    "user-follow-read", 
-    "user-follow-modify"
+    "user-follow-read",
+    "user-follow-modify",
   ];
-  const state = typeof req.query.state === 'string' ? req.query.state : 'Queen of Tears';
+  const state =
+    typeof req.query.state === "string" ? req.query.state : "Queen of Tears";
   res.send(spotifyApi.createAuthorizeURL(scopes, state));
 }
 
@@ -82,9 +94,12 @@ export async function confirmOfAccessToSpotify(req: Request, res: Response) {
     const code = typeof req.query.code === "string" ? req.query.code : null;
     if (!code) return res.status(400).json(errorMessageObj("Invalid request"));
 
-    const { refresh_token, access_token } = await handleSpotifyAuthorization(spotifyApi, code);
+    const { refresh_token, access_token } = await handleSpotifyAuthorization(
+      spotifyApi,
+      code
+    );
     const me = await spotifyApi.getMe();
-    let user = await findOrCreateUser(spotifyApi, me.body, refresh_token);
+    const user = await findOrCreateUser(spotifyApi, me.body, refresh_token);
 
     await setAuthTokens(res, user);
     await setAccessTokenSpotify(res, access_token);
@@ -95,18 +110,21 @@ export async function confirmOfAccessToSpotify(req: Request, res: Response) {
   }
 }
 
-
 export async function logout(req: Request, res: Response) {
   await deleteAuthTokensFromCookies(res);
   return res.sendStatus(200);
 }
 
-export async function refreshAccessToken(req: Request, res: Response){
+export async function refreshAccessToken(req: Request, res: Response) {
   try {
     const inputTokens = extractTokens(req);
-    if (!inputTokens) return res.status(401).json(errorMessageObj("Not Authorized"));
+    if (!inputTokens)
+      return res.status(401).json(errorMessageObj("Not Authorized"));
 
-    const decoded = await verifyToken(ETokenType.Refresh, inputTokens.refreshToken);
+    const decoded = await verifyToken(
+      ETokenType.Refresh,
+      inputTokens.refreshToken
+    );
     const user = await findUserById(decoded.id);
 
     await updateAccessTokenForUser(user.id, spotifyApi, res);
@@ -119,3 +137,70 @@ export async function refreshAccessToken(req: Request, res: Response){
   }
 }
 
+export async function verificateEmail(req: Request, res: Response) {
+  try {
+    const { token } = req.params;
+    if (!token)
+      return res.status(400).json(errorMessageObj("Token is required"));
+
+    let data: JwtPayload = {};
+    try {
+      data = await verifyToken(ETokenType.Verification, token);
+    } catch (error) {
+      return res.status(403).json(errorMessageObj("Invalid token"));
+    }
+
+    const { _id } = data;
+    const user = await User.findById(_id);
+    if (!user) throw new Error("User not found");
+    user.emailVerified = true;
+    await user.save();
+    return res.redirect(`${FRONTEND_URL}/verify-email`);
+  } catch (error) {
+    console.error(error);
+    return res.status(404).json(errorMessageObj("User not found"));
+  }
+}
+
+export async function sendPasswordResetEmailController(
+  req: Request,
+  res: Response
+) {
+  try {
+    const { email } = req.body;
+    if (!email)
+      return res.status(400).json(errorMessageObj("Email is required"));
+    sendPasswordResetEmail(email);
+    return res.sendStatus(200);
+  } catch (error) {
+    console.error(error);
+    return res.sendStatus(200);
+  }
+}
+
+export async function resetPasswordController(req: Request, res: Response) {
+  try {
+    const { password } = req.body;
+    const { token } = req.params;
+    if (!token)
+      return res.status(400).json(errorMessageObj("Token is required"));
+    if (!password)
+      return res.status(400).json(errorMessageObj("Password is required"));
+    let data: JwtPayload = {};
+    try {
+      data = await verifyToken(ETokenType.PasswordReset, token);
+    } catch (error) {
+      return res.status(403).json(errorMessageObj("Invalid token"));
+    }
+
+    const { _id } = data;
+    const user = await findUserById(_id);
+    if (!user) return res.status(404).json(errorMessageObj("User not found"));
+    user.passwordHash = await createHashPassword(password);
+    await user.save();
+    return res.sendStatus(200);
+  } catch (error: any) {
+    console.error(error);
+    return res.status(403).json(errorMessageObj(error.message || 'Forbidden'));
+  }
+}

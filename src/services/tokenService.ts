@@ -2,7 +2,9 @@ import jwt from "jsonwebtoken";
 import {
   httponlyCookiesOption,
   jwtAccessConfig,
+  jwtPasswordResetConfig,
   jwtRefreshConfig,
+  jwtVerificationConfig,
 } from "../config/auth";
 import { ETokenType, IAuthTokens } from "../types/token";
 import { Response } from "express";
@@ -14,6 +16,10 @@ export function getConfig(type: ETokenType) {
       return jwtAccessConfig;
     case ETokenType.Refresh:
       return jwtRefreshConfig;
+    case ETokenType.Verification:
+      return jwtVerificationConfig;
+    case ETokenType.PasswordReset:
+      return jwtPasswordResetConfig;
     default:
       throw new Error(`Wrong token type`);
   }

@@ -12,6 +12,18 @@ export const jwtRefreshConfig = {
   expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRATION_TIME,
 };
 
+export const jwtVerificationConfig = {
+  secret: process.env.JWT_VERIFICATION_TOKEN_SECRET,
+  expiresIn: undefined,
+};
+
+
+export const jwtPasswordResetConfig = {
+  secret: process.env.JWT_PASSWORD_RESET_TOKEN_SECRET,
+  expiresIn: process.env.JWT_PASSWORD_RESET_TOKEN_EXPIRATION_TIME,
+};
+
+
 const year = 1000 * 60 * 60 * 24 * 365;
 
 export const httponlyCookiesOption: {
