@@ -15,5 +15,6 @@ artistRouter.get("/get-artist", getAllArtists);
 artistRouter.get("/user-following-artists", authGuard, refreshTokenMiddleware, getAllFollowedArtistsSpotify);
 artistRouter.get("/get-artist/:artistId", getArtistById);
 artistRouter.get("/get-artist-songs/:artistId", getArtistTopTracks);
+artistRouter.get("/get-artists", getArtistsByIds);
 
 export { artistRouter};
