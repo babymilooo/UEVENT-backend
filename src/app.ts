@@ -5,6 +5,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import { authRouter } from "./routers/authRouter";
 import { artistRouter } from "./routers/artistsRouter";
+import { userRouter } from "./routers/userRouter";
 
 const app = express();
 
@@ -20,7 +21,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+app.use('/static/avatars', express.static('src/static/avatars'));
+
 app.use('/auth', authRouter);
 app.use('/artists', artistRouter);
+app.use('/user', userRouter);
 
 export default app;

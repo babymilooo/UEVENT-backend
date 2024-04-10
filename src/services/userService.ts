@@ -4,22 +4,32 @@ import { emailRegex } from "../helpers/emailRegex";
 import { User } from "../models/user";
 import { IUserDto, IUserUpdateDto } from "../types/user";
 import { refreshSpotifyAccessToken } from "../services/tokenService";
+import fs from 'fs';
+
+export async function createHashPassword(password: string): Promise<string> {
+  if (new TextEncoder().encode(password).length > 72) {
+    throw new Error("Password is too long");
+  }
+
+  const passwordHash = bcrypt.hashSync(
+    password || '',
+    Number(process.env.SALT_ROUNDS)
+  )
+  
+  return passwordHash;
+}
 
 export async function createUser(userDto: IUserDto) {
   if (!emailRegex.test(userDto.email)) {
     throw new Error("Email must be valid");
   }
-  if (new TextEncoder().encode(userDto.password).length > 72) {
-    throw new Error("Password is too long");
-  }
+
+  const hashPassword = createHashPassword(userDto.password);
 
   const userObj: any = {
     ...userDto,
     emailVerified: userDto.isRegisteredViaSpotify || false,
-    passwordHash: bcrypt.hashSync(
-      userDto.password || '',
-      Number(process.env.SALT_ROUNDS)
-    ),
+    passwordHash: hashPassword
   };
   delete userObj.password;
   //TODO - send verification email
@@ -51,7 +61,7 @@ export async function findUserByEmail(email: string) {
 }
 
 export async function updateUser(id: string, updateData: IUserUpdateDto) {
-  return await User.findByIdAndUpdate(id, updateData).exec();
+  return await User.findByIdAndUpdate(id, updateData, { new: true }).exec();
 }
 
 export async function deleteUser(id: string) {
@@ -64,6 +74,18 @@ export async function removeSensitiveData(user: any) {
   delete userObject.passwordHash; 
   delete userObject.spotifyRefreshToken; 
   return userObject;
+}
+
+export async function getPublicUserInfo(user: any) {
+  const userObject = user.toObject ? user.toObject() : user._doc ? user._doc : user;
+
+  const publicUserInfo = {
+    name: userObject.userName,
+    email: userObject.email,
+    profilePicture: userObject.profilePicture 
+  };
+
+  return publicUserInfo;
 }
 
 
@@ -124,6 +146,24 @@ export async function getRefreshTokenForUser(userId: string) {
     throw new Error("Refresh token not found"); 
   return refreshToken; 
 }
+
+
+export async function handleProfilePictureUpdate(currentUser: any, updateData: any, file?: Express.Multer.File) {
+  if (currentUser.profilePicture) {
+    const oldImagePath = currentUser.profilePicture.replace(`${process.env.BACKEND_URL}/static`, 'src/static');
+    try {
+      if (fs.existsSync(oldImagePath)) fs.unlinkSync(oldImagePath);
+    } catch (error) {
+      console.error("Error deleting old profile picture:", error);
+    }
+  }
+
+  if (file && file.path) {
+    const relativeFilePath = file.path.split('src/static')[1];
+    updateData.profilePicture = `${process.env.BACKEND_URL}/static${relativeFilePath}`;
+  }
+}
+
 
 
 // export async function findOrCreateUser(spotifyApi: any, me: any, refreshToken: string) {

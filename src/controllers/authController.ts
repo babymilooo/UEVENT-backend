@@ -36,7 +36,7 @@ export async function login(req: Request, res: Response) {
       return res.status(400).json(errorMessageObj("Email and password are required"));
 
     if (!bcrypt.compareSync(loginInfo.password, user.passwordHash))
-      return res.status(403).json(errorMessageObj("Invalid password"));
+      return res.status(403).json(errorMessageObj("Email or password is invalid"));
 
     // const tokenPayload = {
     //   id: user._id,
@@ -49,6 +49,18 @@ export async function login(req: Request, res: Response) {
     return res.status(200).json(await removeSensitiveData(user));
   } catch (error) {
     return res.status(400).json(errorMessageObj("Invalid data"));
+  }
+}
+
+export async function register(req: Request, res: Response) {
+  try {
+    const registerInfo: IRegisterDto = req.body;
+    await createUser(registerInfo);
+    return res.sendStatus(201);
+  } catch (error) {
+    return res
+      .status(409)
+      .json(errorMessageObj("User with this email already exists"));
   }
 }
 
@@ -88,18 +100,6 @@ export async function logout(req: Request, res: Response) {
   await deleteAuthTokensFromCookies(res);
   return res.sendStatus(200);
 }
-
-export async function register(req: Request, res: Response) {
-  try {
-    const registerInfo: IRegisterDto = req.body;
-    await createUser(registerInfo);
-    return res.sendStatus(201);
-  } catch (error) {
-    return res
-      .status(409)
-      .json(errorMessageObj("User with this email already exists"));
-  }
-};
 
 export async function refreshAccessToken(req: Request, res: Response){
   try {
