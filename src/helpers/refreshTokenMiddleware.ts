@@ -5,7 +5,7 @@ import {
   updateAccessTokenForUser 
 } from "../services/tokenService";
 import { errorMessageObj } from "./errorMessageObj";
-import { spotifyApi } from "../config/spotifyConfig";
+
 
 export async function refreshTokenMiddleware(
   req: Request | any, 
@@ -14,7 +14,7 @@ export async function refreshTokenMiddleware(
 ) {
   try {
     const userId = (req as any).userId as string; 
-    const refreshToken = (req as any).userId as string; 
+    const refreshToken = (req as any).tokens.refreshToken as string; 
     const tokens = await setAccessToken(userId, refreshToken);
     await setAuthTokensToCookies(res, tokens);
 

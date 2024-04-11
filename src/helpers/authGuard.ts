@@ -11,7 +11,7 @@ export async function authGuard(
   next: NextFunction
 ) {
   try {
-    const tokens = extractTokens(req);
+    const tokens = extractTokens(req, 2);
     if (!tokens) return res.status(401).json(errorMessageObj("Not Authorized"));
     const jwtData: any = await verifyToken(
       ETokenType.Access,

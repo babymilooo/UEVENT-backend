@@ -103,13 +103,13 @@ export async function logout(req: Request, res: Response) {
 
 export async function refreshAccessToken(req: Request, res: Response){
   try {
-    const inputTokens = extractTokens(req);
+    const inputTokens = extractTokens(req, 1);
     if (!inputTokens) return res.status(401).json(errorMessageObj("Not Authorized"));
 
     const decoded = await verifyToken(ETokenType.Refresh, inputTokens.refreshToken);
     const user = await findUserById(decoded.id);
-
-    await updateAccessTokenForUser(user.id, spotifyApi, res);
+    if (user.isRegisteredViaSpotify)
+      await updateAccessTokenForUser(user.id, spotifyApi, res);
 
     const tokens = await setAccessToken(user.id, inputTokens.refreshToken);
     await setAuthTokensToCookies(res, tokens);
