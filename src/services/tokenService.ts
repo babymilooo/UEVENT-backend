@@ -31,7 +31,11 @@ export async function signToken(
 ): Promise<string> {
   const config = getConfig(type);
   if (!config.secret) throw new Error("Token Secret not set");
-  return jwt.sign(payload, config.secret, { expiresIn: config.expiresIn });
+  if (config.expiresIn) {
+    return jwt.sign(payload, config.secret, { expiresIn: config.expiresIn });
+  }
+  else return jwt.sign(payload, config.secret);
+  
 }
 
 export async function verifyToken(type: ETokenType, token: string) {

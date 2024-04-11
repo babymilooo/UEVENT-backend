@@ -36,7 +36,7 @@ export async function sendVerificationEmail(user: IUser) {
 export async function sendPasswordResetEmail(email: string) {
   const user = await findUserByEmail(email);
   if (!user) throw new Error("User not found");
-  const token = await signToken(ETokenType.PasswordReset, { _id: user._id });
+  const token = await signToken(ETokenType.PasswordReset, { _id: user._id, passwordHash: user.passwordHash });
   const emailHtml = passwordChangeEmail(`/password-reset/${encodeURIComponent(token)}`);
   const opts: Options = {
     to: user.email,

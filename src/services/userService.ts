@@ -5,6 +5,7 @@ import { User } from "../models/user";
 import { IUserDto, IUserUpdateDto } from "../types/user";
 import { refreshSpotifyAccessToken } from "../services/tokenService";
 import fs from 'fs';
+import { sendVerificationEmail } from "./emailService";
 
 export async function createHashPassword(password: string): Promise<string> {
   if (new TextEncoder().encode(password).length > 72) {
@@ -24,7 +25,7 @@ export async function createUser(userDto: IUserDto) {
     throw new Error("Email must be valid");
   }
 
-  const hashPassword = createHashPassword(userDto.password);
+  const hashPassword = await createHashPassword(userDto.password);
 
   const userObj: any = {
     ...userDto,
@@ -32,10 +33,11 @@ export async function createUser(userDto: IUserDto) {
     passwordHash: hashPassword
   };
   delete userObj.password;
-  //TODO - send verification email
+
   try {
     const user = new User(userObj);
     await user.save();
+    sendVerificationEmail(user);
     return user;
   } catch (error) {
     console.error(error);
