@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import app from "./app";
-import "dotenv/config";
+// import "dotenv/config";
+import dotenv from 'dotenv';
+dotenv.config();
 
 async function main() {
   const MONGODB_URI = process.env.MONGODB_URI;

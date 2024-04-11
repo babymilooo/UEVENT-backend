@@ -2,7 +2,9 @@ import jwt from "jsonwebtoken";
 import {
   httponlyCookiesOption,
   jwtAccessConfig,
+  jwtPasswordResetConfig,
   jwtRefreshConfig,
+  jwtVerificationConfig,
 } from "../config/auth";
 import { ETokenType, IAuthTokens } from "../types/token";
 import { Response } from "express";
@@ -14,6 +16,10 @@ export function getConfig(type: ETokenType) {
       return jwtAccessConfig;
     case ETokenType.Refresh:
       return jwtRefreshConfig;
+    case ETokenType.Verification:
+      return jwtVerificationConfig;
+    case ETokenType.PasswordReset:
+      return jwtPasswordResetConfig;
     default:
       throw new Error(`Wrong token type`);
   }
@@ -25,7 +31,11 @@ export async function signToken(
 ): Promise<string> {
   const config = getConfig(type);
   if (!config.secret) throw new Error("Token Secret not set");
-  return jwt.sign(payload, config.secret, { expiresIn: config.expiresIn });
+  if (config.expiresIn) {
+    return jwt.sign(payload, config.secret, { expiresIn: config.expiresIn });
+  }
+  else return jwt.sign(payload, config.secret);
+  
 }
 
 export async function verifyToken(type: ETokenType, token: string) {

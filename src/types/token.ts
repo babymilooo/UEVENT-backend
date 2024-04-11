@@ -6,4 +6,6 @@ export interface IAuthTokens {
   export enum ETokenType {
     Access,
     Refresh,
+    Verification,
+    PasswordReset,
   }
