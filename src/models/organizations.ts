@@ -6,6 +6,7 @@ export interface IShemaOrganization {
   name: string; 
   description?: string;
   website?: string;
+  location?: string;
   isVerified: boolean; 
   followers: Schema.Types.ObjectId[]; 
 }
@@ -26,6 +27,10 @@ const organizationSchema = new Schema<IShemaOrganization>({
     default: "" 
   },
   website: { 
+    type: String, 
+    default: "" 
+  },
+  location: { 
     type: String, 
     default: "" 
   },

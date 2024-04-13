@@ -7,7 +7,6 @@ export interface ISchemaUser {
   email: string;
   emailVerified: boolean;
   passwordHash?: string;
-  // spotifyId?: string;
   isRegisteredViaSpotify?: boolean;
   spotifyRefreshToken?: string;
   role: string;
@@ -36,14 +35,9 @@ const userSchema = new Schema<ISchemaUser>({
   },
   passwordHash: {
     type: String,
-    //required: true,
+    required: true,
     trim: true,
   },
-  // spotifyId: {
-  //   type: String,
-  //   required: false,
-  //   trim: true,
-  // },
   isRegisteredViaSpotify: {
     type: Boolean,
     required: false,
