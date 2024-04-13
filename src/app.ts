@@ -6,6 +6,7 @@ import morgan from "morgan";
 import { authRouter } from "./routers/authRouter";
 import { artistRouter } from "./routers/artistsRouter";
 import { userRouter } from "./routers/userRouter";
+import { organizationRouter } from "./routers/organizationsRouter";
 
 const app = express();
 
@@ -26,5 +27,6 @@ app.use('/static/avatars', express.static('src/static/avatars'));
 app.use('/auth', authRouter);
 app.use('/artists', artistRouter);
 app.use('/user', userRouter);
+app.use('/organization', organizationRouter);
 
 export default app;

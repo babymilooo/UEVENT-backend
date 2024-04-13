@@ -1,4 +1,4 @@
-import { HydratedDocument, Schema, model } from "mongoose";
+import { HydratedDocument, Schema, model, Types } from "mongoose";
 
 export interface IShemaOrganization {
   _id: string;
@@ -8,7 +8,7 @@ export interface IShemaOrganization {
   website?: string;
   location?: string;
   isVerified: boolean; 
-  followers: Schema.Types.ObjectId[]; 
+  followers: Types.ObjectId[]; 
 }
 
 const organizationSchema = new Schema<IShemaOrganization>({
@@ -40,7 +40,7 @@ const organizationSchema = new Schema<IShemaOrganization>({
     default: false 
   },
   followers: [{ 
-    type: Schema.Types.ObjectId, 
+    type: Types.ObjectId, 
     ref: "User" 
   }],
 });

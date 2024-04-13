@@ -52,6 +52,12 @@ export async function findUserById(id: string) {
   return user;
 }
 
+export async function isUserAdmin(id: string): Promise<boolean> {
+  const user = await findUserById(id);
+  return user.role === 'admin';
+}
+
+
 export async function findAllUsers() {
   return await User.find().exec();
 }

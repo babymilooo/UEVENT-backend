@@ -9,7 +9,6 @@ export interface IOrganizationUpdateDto {
   name?: string;
   description?: string;
   website?: string;
-  isVerified?: boolean;
   location?: string;
   followers?: string[]
 }
