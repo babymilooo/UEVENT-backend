@@ -70,3 +70,18 @@ export async function deleteAllEventsByOrganization(orgId: string) {
 export async function deleteOrganization(orgId: string) {
   await Organization.findByIdAndDelete(orgId)
 }
+
+export async function getEventsByIdOrganization(orgId: string, skip: number, limit: number) {
+  return await Event.find({ organizationId: orgId })
+                            .sort({ date: 1 })
+                            .skip(skip)
+                            .limit(limit);
+}
+
+export async function getOrganizationsByCreate(userId: string) {
+  return await Organization.find({ createdBy: userId });
+}
+
+export async function getOrganizationIfUserInFollowers(userId: string) {
+  return await Organization.find({ followers: userId });
+}

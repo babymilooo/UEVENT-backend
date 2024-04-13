@@ -8,7 +8,10 @@ import {
   findOrganizationById,
   deleteAllEventsByOrganization,
   deleteOrganization,
-  checkIfUserIsCreator
+  checkIfUserIsCreator,
+  getEventsByIdOrganization,
+  getOrganizationsByCreate,
+  getOrganizationIfUserInFollowers
  } from "../services/organizationsService";
 import { IOrganizationUpdateDto } from "../types/organization";
 
@@ -88,5 +91,51 @@ export async function deleteOrganizationAndEvents(req: Request, res: Response) {
     res.status(200);
   } catch (error) {
     res.status(500).json(errorMessageObj("An error occurred while deleting the organization and its events"));
+  }
+}
+
+export async function getOrganizationById(req: Request, res: Response) {
+  try {
+    const { orgId } = req.params;
+    const organization = await findOrganizationById(orgId);
+    res.status(200).json(organization);
+  } catch (error) {
+    res.status(500).json(errorMessageObj("Error loading organization data"));
+  }
+}
+
+
+export async function getEventsByOrganization(req:  Request, res: Response) {
+  try {
+    const { orgId } = req.params;
+    const page = typeof req.query.page === "string" ? parseInt(req.query.page) : 1;
+    const limit = typeof req.query.limit === "string" ? parseInt(req.query.limit) : 10;
+    const skip = (page - 1) * limit;
+
+    const events = await getEventsByIdOrganization(orgId, skip, limit);
+
+    res.status(200).json(events);
+  } catch (error) {
+    res.status(500).json(errorMessageObj("Error loading organization data"));
+  }
+}
+
+export async function getMyOrganizations(req: Request, res: Response) {
+  try {
+    const userId = (req as any).userId as string; 
+    const organizations = await getOrganizationsByCreate(userId);
+    res.status(200).json(organizations);
+  } catch (error) {
+    res.status(500).json(errorMessageObj("Error loading organization data"));
+  }
+}
+
+export async function getOrganizationsIFollow(req: Request, res: Response) {
+  try {
+    const userId = (req as any).userId as string;
+    const organizations = await getOrganizationIfUserInFollowers(userId);
+    res.status(200).json(organizations);
+  } catch (error) {
+    res.status(500).json(errorMessageObj("Error loading organization data"));
   }
 }

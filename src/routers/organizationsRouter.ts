@@ -4,19 +4,28 @@ import {
   updateOrganization,
   verifyOrganizationByAdmin,
   addFollowerOrganization,
-  deleteOrganizationAndEvents
+  deleteOrganizationAndEvents,
+  getOrganizationById,
+  getEventsByOrganization,
+  getMyOrganizations,
+  getOrganizationsIFollow
  } from "../controllers/organizationsController";
 import { authGuard } from "../helpers/authGuard";
 import { refreshTokenMiddleware } from "../helpers/refreshTokenMiddleware";
 import { adminAuthGuard } from "../helpers/adminAuthGuard";
 
 const organizationRouter = express.Router();
-
+//протестила
 organizationRouter.post("/create-organization", authGuard, refreshTokenMiddleware, createOrganization);
 organizationRouter.patch("/edit-organization/:orgId", authGuard, refreshTokenMiddleware, updateOrganization);
 organizationRouter.post("/verify-organization/:orgId", adminAuthGuard, refreshTokenMiddleware, verifyOrganizationByAdmin);
 organizationRouter.post("/follow-organization/:orgId", authGuard, refreshTokenMiddleware, addFollowerOrganization);
-organizationRouter.post("/delete-organization/:orgId", authGuard, refreshTokenMiddleware, deleteOrganizationAndEvents);
+// не протестила
+organizationRouter.delete("/delete-organization/:orgId", authGuard, refreshTokenMiddleware, deleteOrganizationAndEvents);
+organizationRouter.get("/get-organization/:orgId", getOrganizationById);
+organizationRouter.get("/get-events/:orgId", getEventsByOrganization);
+organizationRouter.get("/get-my-organizations/:orgId", authGuard, refreshTokenMiddleware, getMyOrganizations);
+organizationRouter.get("/get-my-organizations-followed", authGuard, refreshTokenMiddleware, getOrganizationsIFollow);
 
 
 export { organizationRouter};
