@@ -4,7 +4,7 @@ import {
   updateUser,
   removeSensitiveData,
   findUserById,
-  handleProfilePictureUpdate,
+  handleImageUpdate,
   getPublicUserInfo,
 } from "../services/userService";
 import { errorMessageObj } from "../helpers/errorMessageObj";
@@ -32,7 +32,7 @@ export async function updateProfile(
       updateData.passwordHash = passwordHash;
       delete updateData.password;
     }
-    await handleProfilePictureUpdate(currentUser, updateData, req.file);
+    await handleImageUpdate(currentUser, updateData, "profilePicture",  req.file);
 
     const updateInfoUser = await updateUser(userId, updateData);
     res.status(200).json(await removeSensitiveData(updateInfoUser));

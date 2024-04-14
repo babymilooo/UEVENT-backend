@@ -6,10 +6,10 @@ import {
   getUserInfo,
   getUserInfoById 
 } from "../controllers/userController";
-import { upload } from "../config/configMulter";
+import { uploadAvatars } from "../config/configMulter";
 const userRouter = express.Router();
 
-userRouter.patch("/edit-profile", authGuard, refreshTokenMiddleware, upload.single("avatar"), updateProfile);
+userRouter.patch("/edit-profile", authGuard, refreshTokenMiddleware, uploadAvatars.single("avatar"), updateProfile);
 userRouter.get("/user-info", authGuard, refreshTokenMiddleware, getUserInfo);
 userRouter.get('/user-info/:userId', getUserInfoById);
 

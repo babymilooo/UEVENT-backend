@@ -9,6 +9,7 @@ export interface IShemaOrganization {
   location?: string;
   isVerified: boolean; 
   followers: Types.ObjectId[]; 
+  picture?: string;
 }
 
 const organizationSchema = new Schema<IShemaOrganization>({
@@ -43,6 +44,10 @@ const organizationSchema = new Schema<IShemaOrganization>({
     type: Types.ObjectId, 
     ref: "User" 
   }],
+  picture : { 
+    type: String, 
+    default: "" 
+  }
 });
 
 export const Organization = model<IShemaOrganization>("Organization", organizationSchema);

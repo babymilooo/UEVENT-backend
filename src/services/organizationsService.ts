@@ -2,6 +2,7 @@ import { Organization } from "../models/organizations";
 import { Event } from "../models/events";
 import { IOrganizationDto, IOrganizationUpdateDto } from "../types/organization";
 import mongoose from 'mongoose';
+import { handleImageUpdate } from "./userService";
 
 export async function createNewOrganization(orgDTO: IOrganizationDto, userId: string) {
   try {
@@ -17,6 +18,7 @@ export async function createNewOrganization(orgDTO: IOrganizationDto, userId: st
       ...orgDTO,
       createdBy: userId
     }
+
     const newOrganization = new Organization(orgObj);
     await newOrganization.save();
     return newOrganization;
@@ -24,6 +26,7 @@ export async function createNewOrganization(orgDTO: IOrganizationDto, userId: st
     throw error;
   }
 }
+
 
 export async function findOrganizationByName(name: string) {
   return await Organization.findOne({ name: name }).exec();

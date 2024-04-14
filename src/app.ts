@@ -23,6 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use('/static/avatars', express.static('src/static/avatars'));
+app.use('/static/organization_images', express.static('src/static/organization_images'));
 
 app.use('/auth', authRouter);
 app.use('/artists', artistRouter);

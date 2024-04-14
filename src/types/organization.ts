@@ -2,6 +2,7 @@ export interface IOrganizationDto {
   name: string;
   description?: string;
   website?: string;
+  picture?: string;
   location?: string;
 }
 
@@ -10,6 +11,7 @@ export interface IOrganizationUpdateDto {
   description?: string;
   website?: string;
   location?: string;
-  followers?: string[]
+  followers?: string[];
+  picture?: string;
 }
 

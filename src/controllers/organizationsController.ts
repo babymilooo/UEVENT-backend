@@ -13,13 +13,16 @@ import {
   getOrganizationsByCreate,
   getOrganizationIfUserInFollowers
  } from "../services/organizationsService";
-import { IOrganizationUpdateDto } from "../types/organization";
+import { IOrganizationUpdateDto, IOrganizationDto } from "../types/organization";
+import { handleImageUpdate } from "../services/userService";
+
 
 export async function createOrganization(req: Request, res: Response) {
   try {
     const userId = (req as any).userId as string; 
-    const orgData = req.body
-    const newOrganization = await createNewOrganization(orgData, userId)
+    const orgData: IOrganizationDto = req.body;
+    await handleImageUpdate(orgData, orgData, "picture", req.file);
+    const newOrganization = await createNewOrganization(orgData, userId);
     res.status(200).json(newOrganization);
   } catch (error: any) {
     if (error instanceof Error) 
@@ -37,6 +40,9 @@ export async function updateOrganization(req: Request, res: Response) {
 
     if (!orgId || !userId || !updateData) 
       return res.status(400).json(errorMessageObj("Missing organization ID or update data"));
+
+    const currentOrg = await findOrganizationById(orgId);
+    await handleImageUpdate(currentOrg, updateData, "picture", req.file);
 
     const updatedOrganization = await updateOrganizationByIdAndUserId(orgId, userId, updateData);
     res.status(200).json(updatedOrganization);
