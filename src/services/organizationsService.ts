@@ -2,7 +2,7 @@ import { Organization } from "../models/organizations";
 import { Event } from "../models/events";
 import { IOrganizationDto, IOrganizationUpdateDto } from "../types/organization";
 import mongoose from 'mongoose';
-import { handleImageUpdate } from "./userService";
+
 
 export async function createNewOrganization(orgDTO: IOrganizationDto, userId: string) {
   try {

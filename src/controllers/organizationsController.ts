@@ -15,6 +15,7 @@ import {
  } from "../services/organizationsService";
 import { IOrganizationUpdateDto, IOrganizationDto } from "../types/organization";
 import { handleImageUpdate } from "../services/userService";
+import { sendOrganisationVerifiedEmail, sendRequestOrgVerificationEmail } from "../services/emailService";
 
 
 export async function createOrganization(req: Request, res: Response) {
@@ -23,6 +24,9 @@ export async function createOrganization(req: Request, res: Response) {
     const orgData: IOrganizationDto = req.body;
     await handleImageUpdate(orgData, orgData, "picture", req.file);
     const newOrganization = await createNewOrganization(orgData, userId);
+    //asyncronously send emails to admins
+    sendRequestOrgVerificationEmail(newOrganization);
+
     res.status(200).json(newOrganization);
   } catch (error: any) {
     if (error instanceof Error) 
@@ -58,6 +62,8 @@ export async function verifyOrganizationByAdmin(req: Request, res: Response) {
     const updatedOrganization = await verifyOrganization(orgId);
     if (!updatedOrganization)
       return res.status(404).json(errorMessageObj("Organization not found"));
+    //send email to organiser
+    sendOrganisationVerifiedEmail(updatedOrganization);
     res.status(200).json(updatedOrganization);
   } catch (error) {
     res.status(500).json(errorMessageObj("An error occurred while verifying the organization"));

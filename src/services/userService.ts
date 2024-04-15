@@ -7,6 +7,7 @@ import { refreshSpotifyAccessToken } from "../services/tokenService";
 import fs from 'fs';
 import path from "path";
 import { sendVerificationEmail } from "./emailService";
+import { ObjectId } from "mongoose";
 
 export async function createHashPassword(password: string): Promise<string> {
   if (new TextEncoder().encode(password).length > 72) {
@@ -46,7 +47,7 @@ export async function createUser(userDto: IUserDto) {
   }
 }
 
-export async function findUserById(id: string) {
+export async function findUserById(id: string | ObjectId) {
   const user = await User.findById(id).exec();
   if (!user) 
     throw new Error("User not found");
@@ -61,6 +62,10 @@ export async function isUserAdmin(id: string): Promise<boolean> {
 
 export async function findAllUsers() {
   return await User.find().exec();
+}
+
+export async function findAllAdmins() {
+  return await User.find({ role: 'admin' }).exec();
 }
 
 export async function findUserByEmail(email: string) {
