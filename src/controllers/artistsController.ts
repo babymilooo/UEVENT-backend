@@ -58,7 +58,7 @@ export async function getArtistTopTracks(req: Request, res: Response) {
   try {
     const artistId = req.params.artistId;
     const countryCode = typeof req.query.countryCode === 'string' ? req.query.countryCode : 'UA';
-    
+
     if (!artistId)
       return res.status(400).json(errorMessageObj("Artist ID is not provided"));
 
@@ -70,7 +70,7 @@ export async function getArtistTopTracks(req: Request, res: Response) {
 
     const result = await spotifyApi.getArtistTopTracks(artistId, countryCode);
     if (result.body && result.body.tracks) res.status(200).json(result.body.tracks);
-    else 
+    else
       res.status(404).json(errorMessageObj("Top tracks not found"));
   } catch (error) {
     res.status(500).json(errorMessageObj("Error fetching artist's top tracks by ID"));
@@ -115,7 +115,7 @@ export async function getAllFollowedArtistsSpotify(
     res.status(200).json(artists);
   } catch (error) {
     const err = error as any;
-    if (err.body && err.body.error && err.body.error.status === 401) {
+    if (err) {
       const userId = (req as any).userId as string;
       try {
         await updateAccessTokenForUser(userId, spotifyApi, res);
