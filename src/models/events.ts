@@ -8,6 +8,8 @@ export interface ISchemaEvent {
   date: Date; 
   website?: string; 
   attendees: Types.ObjectId[];
+  price?: number;
+  stripeProductId?: string;
 }
 
 const eventSchema = new Schema<ISchemaEvent>({
@@ -37,6 +39,15 @@ const eventSchema = new Schema<ISchemaEvent>({
     type: Types.ObjectId, 
     ref: "User" 
   }],
+  //price in USD cents
+  price: {
+    type: Number,
+    min: 50
+  },
+  // TODO - create/update stripe product with event 
+  stripeProductId: {
+    type: String,
+  },
 });
 
 export const Event = model<ISchemaEvent>("Event", eventSchema);
