@@ -6,7 +6,7 @@ import { createEventController, deleteEventController, updateEventController } f
 const eventsRouter = Router();
 
 eventsRouter.post('/create', authGuard, refreshTokenMiddleware, createEventController);
-eventsRouter.put('/:eventId', authGuard, refreshTokenMiddleware, updateEventController);
+eventsRouter.patch('/:eventId', authGuard, refreshTokenMiddleware, updateEventController);
 eventsRouter.delete('/:eventId', authGuard, refreshTokenMiddleware, deleteEventController);
 
 export {eventsRouter};

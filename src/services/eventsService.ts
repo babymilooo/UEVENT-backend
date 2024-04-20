@@ -4,6 +4,7 @@ import { removeUndefKeys } from "../helpers/removeUndefKeys";
 import { Event, IEvent, ISchemaEvent } from "../models/events";
 import { IEventDto, IEventUpdateDto } from "../types/event";
 import { findOrganizationById } from "./organizationsService";
+import { objDataToString } from "../helpers/objDataToString";
 
 export async function findAllEventsOrganisation(
   orgId: string | Types.ObjectId,
@@ -33,20 +34,16 @@ export async function createNewEvent(data: IEventDto): Promise<IEvent> {
     ...data,
     attendees: [],
   });
-  await newEvent.save();
 
   const stripeProduct = await stripeApi.products.create({
     name: `Ticket ${newEvent.name}`,
-    description: newEvent.description,
-    metadata: await newEvent.toObject(),
+    description: newEvent.description || "",
+    metadata: objDataToString(await newEvent.toObject()),
     default_price_data: {
       currency: "USD",
       unit_amount: newEvent.price,
     },
-    url:
-      newEvent.website && newEvent.website?.trim().length > 0
-        ? newEvent.website
-        : undefined,
+    url: newEvent.website || "",
   });
   newEvent.stripeProductId = stripeProduct.id;
   await newEvent.save();
@@ -60,19 +57,17 @@ export async function updateEvent(
 ): Promise<IEvent> {
   const event = await findEventById(id);
   if (!event) throw new Error("Event not found");
-  await event.updateOne(updateData).exec();
-  const newEvent = await findEventById(id);
-  if (!newEvent) throw new Error("Event not found");
+  
 
   const productId = event.stripeProductId;
   if (productId) {
     // update stripe product
     const stripeProduct = await stripeApi.products.retrieve(productId);
-    const oldProductData = {
+    const oldProductData = removeUndefKeys({
       name: stripeProduct.name,
-      desciption: stripeProduct.description,
+      description: stripeProduct.description,
       url: stripeProduct.url,
-    };
+    });
     const newProductData = removeUndefKeys({
       name: updateData.name ? `Ticket ${updateData.name}` : undefined,
       description: updateData.description ? updateData.description : undefined,
@@ -83,8 +78,7 @@ export async function updateEvent(
     });
     await stripeApi.products.update(stripeProduct.id, {
       ...oldProductData,
-      ...newProductData,
-      metadata: await newEvent?.toObject(),
+      ...newProductData
     });
 
     //update stripe price if needed
@@ -99,5 +93,9 @@ export async function updateEvent(
       });
     }
   }
+  await event.updateOne(updateData).exec();
+  const newEvent = await findEventById(id);
+  if (!newEvent) throw new Error("Event not found");
+
   return newEvent;
 }
