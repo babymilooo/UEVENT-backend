@@ -2,7 +2,7 @@ import { HydratedDocument, Schema, model, Types } from "mongoose";
 
 export interface IShemaOrganization {
   _id: string;
-  createdBy: Schema.Types.ObjectId;
+  createdBy: Types.ObjectId;
   name: string; 
   description?: string;
   website?: string;

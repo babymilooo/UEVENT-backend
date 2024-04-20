@@ -1,8 +1,8 @@
 import { HydratedDocument, Schema, model, Types } from "mongoose";
 
 interface ISchemaTicket {
-  event: Schema.Types.ObjectId; 
-  owner: Schema.Types.ObjectId; 
+  event: Types.ObjectId; 
+  owner: Types.ObjectId; 
   price: number; 
   category: string;
   isUsed: boolean; 
@@ -10,12 +10,12 @@ interface ISchemaTicket {
 
 const ticketSchema = new Schema<ISchemaTicket>({
   event: {
-    type: Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "Event",
     required: true,
   },
   owner: {
-    type: Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },

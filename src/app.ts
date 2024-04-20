@@ -8,6 +8,7 @@ import { artistRouter } from "./routers/artistsRouter";
 import { userRouter } from "./routers/userRouter";
 import { organizationRouter } from "./routers/organizationsRouter";
 import { stripeRouter } from "./routers/stripeRouter";
+import { eventsRouter } from "./routers/eventsRouter";
 
 const app = express();
 
@@ -31,5 +32,6 @@ app.use('/artists', artistRouter);
 app.use('/user', userRouter);
 app.use('/organization', organizationRouter);
 app.use('/stripe', stripeRouter);
+app.use('/events', eventsRouter);
 
 export default app;

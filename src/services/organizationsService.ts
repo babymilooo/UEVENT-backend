@@ -1,7 +1,7 @@
-import { Organization } from "../models/organizations";
+import { IOrganization, Organization } from "../models/organizations";
 import { Event } from "../models/events";
-import { IOrganizationDto, IOrganizationUpdateDto } from "../types/organization";
-import mongoose from 'mongoose';
+import { IOrganizationDto, IOrganizationUpdateDto }  from "../types/organization";
+import mongoose, { Types } from 'mongoose';
 
 
 export async function createNewOrganization(orgDTO: IOrganizationDto, userId: string) {
@@ -41,15 +41,15 @@ export async function updateOrganizationByIdAndUserId(orgId: string, userId: str
   return await Organization.findOneAndUpdate(conditions, updateData, { new: true }).exec();
 }
 
-export async function verifyOrganization(orgId: string) {
+export async function verifyOrganization(orgId: string | Types.ObjectId) {
   return await Organization.findByIdAndUpdate(orgId, { isVerified: true }, { new: true }).exec();
 }
 
-export async function checkIfUserIsCreator(organization: any, userId: string) {
+export async function checkIfUserIsCreator(organization: IOrganization, userId: string) {
   return organization.createdBy.toString() === userId;
 }
 
-export async function findOrganizationById(id: string) {
+export async function findOrganizationById(id: string | Types.ObjectId) {
   const org = await Organization.findById(id).exec();
   if (!org) 
     throw new Error("Organization not found");

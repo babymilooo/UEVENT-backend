@@ -2,49 +2,58 @@ import { HydratedDocument, Schema, model, Types } from "mongoose";
 
 export interface ISchemaEvent {
   _id: string;
-  organizationId: Schema.Types.ObjectId; 
-  name: string; 
-  description?: string; 
-  date: Date; 
-  website?: string; 
+  hidden: boolean;
+  organizationId: Types.ObjectId;
+  name: string;
+  description?: string;
+  date: Date;
+  website?: string;
   attendees: Types.ObjectId[];
-  price?: number;
+  price: number;
   stripeProductId?: string;
 }
 
 const eventSchema = new Schema<ISchemaEvent>({
-  organizationId: { 
+  organizationId: {
     type: Schema.Types.ObjectId,
-    ref: "Organization", 
-    required: true 
+    ref: "Organization",
+    required: true,
   },
-  name: { 
-    type: String, 
-    required: true, 
-    trim: true 
+  hidden: {
+    type: Boolean,
+    required: true,
+    default: false,
   },
-  description: { 
-    type: String, 
-    default: "" 
+  name: {
+    type: String,
+    required: true,
+    trim: true,
   },
-  date: { 
-    type: Date, 
-    required: true 
+  description: {
+    type: String,
+    default: "",
   },
-  website: { 
-    type: String, 
-    default: "" 
+  date: {
+    type: Date,
+    required: true,
   },
-  attendees: [{ 
-    type: Types.ObjectId, 
-    ref: "User" 
-  }],
+  website: {
+    type: String,
+    default: "",
+  },
+  attendees: [
+    {
+      type: Types.ObjectId,
+      ref: "User",
+    },
+  ],
   //price in USD cents
   price: {
     type: Number,
-    min: 50
+    min: 50,
+    required: true,
   },
-  // TODO - create/update stripe product with event 
+  // TODO - create/update stripe product with event
   stripeProductId: {
     type: String,
   },
