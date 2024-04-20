@@ -1,10 +1,19 @@
 import { Router } from "express";
-import { createCheckoutSessionController, getStripeSessionByIdController } from "../controllers/stripeController";
+import {
+  createCheckoutSessionController,
+  getStripeSessionByIdController,
+  stripeCheckoutWebhook,
+} from "../controllers/stripeController";
 import { injectUserIdIfAuthed } from "../helpers/injectUserIdIfAuthed";
 
 const stripeRouter = Router();
 
-stripeRouter.post('/create-checkout-session', injectUserIdIfAuthed, createCheckoutSessionController);
-stripeRouter.get('/session-status', getStripeSessionByIdController);
+stripeRouter.post(
+  "/create-checkout-session",
+  injectUserIdIfAuthed,
+  createCheckoutSessionController
+);
+stripeRouter.get("/session-status", getStripeSessionByIdController);
+stripeRouter.post("/webhook", stripeCheckoutWebhook);
 
-export {stripeRouter};
+export { stripeRouter };

@@ -5,15 +5,17 @@ import { Event } from "../models/events";
 import { stripeApi } from "../config/stripeConfig";
 import Stripe from "stripe";
 import { FRONTEND_URL } from "../config/emailConfig";
+import { createNewTicket } from "../services/ticketService";
 
 export async function createCheckoutSessionController(
   req: Request | any,
   res: Response
 ) {
   try {
-    const { eventId } = req.body;
+    const { eventId, ownerName } = req.body;
     if (!eventId)
       return res.status(400).json(errorMessageObj("eventId is required"));
+    if (!ownerName || typeof ownerName !== 'string') return res.status(400).json(errorMessageObj("ownerName is required"));
     const event = await Event.findById(eventId).exec();
     if (!event) return res.status(404).json(errorMessageObj("Event not found"));
     if (!event.stripeProductId)
@@ -62,6 +64,7 @@ export async function createCheckoutSessionController(
         metadata: {
           eventId: eventId,
           userId: userId,
+          ownerName
         },
         customer_email: user.email,
       });
@@ -79,6 +82,7 @@ export async function createCheckoutSessionController(
         return_url: `${FRONTEND_URL}/payment-return?session_id={CHECKOUT_SESSION_ID}`,
         metadata: {
           eventId: eventId,
+          ownerName
         },
       });
       return res.json({ clientSecret: session.client_secret });
@@ -110,4 +114,24 @@ export async function getStripeSessionByIdController(req: Request, res: Response
     console.error(error);
     return res.status(404).json(errorMessageObj("Session not found"));
   }
+}
+
+export async function stripeCheckoutWebhook(req: Request, res: Response) {
+  const event: Stripe.Event = req.body;
+  switch (event.type) {
+    case 'checkout.session.completed':
+      const session: Stripe.Checkout.Session = event.data.object;
+      const userEmail = session.customer_email;
+      if (!userEmail) break;
+      const { eventId, ownerName } = session.metadata as any;
+      if (!eventId || !ownerName) break;
+      createNewTicket(eventId, userEmail, ownerName);
+
+      break;
+  
+    default:
+      console.log(`Unhandled event type ${event.type}`);
+      break;
+  }
+  return res.json({received: true});
 }
