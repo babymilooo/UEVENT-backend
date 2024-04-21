@@ -34,16 +34,16 @@ export async function createNewEvent(data: IEventDto): Promise<IEvent> {
     ...data,
     attendees: [],
   });
-
+  
   const stripeProduct = await stripeApi.products.create({
     name: `Ticket ${newEvent.name}`,
-    description: newEvent.description || "",
-    metadata: objDataToString(await newEvent.toObject()),
+    description: newEvent.description ? newEvent.description : '',
+    metadata: objDataToString(newEvent.toObject()),
     default_price_data: {
       currency: "USD",
       unit_amount: newEvent.price,
     },
-    url: newEvent.website || "",
+    // url: newEvent.website ? newEvent.website : '',
   });
   newEvent.stripeProductId = stripeProduct.id;
   await newEvent.save();
@@ -71,10 +71,10 @@ export async function updateEvent(
     const newProductData = removeUndefKeys({
       name: updateData.name ? `Ticket ${updateData.name}` : undefined,
       description: updateData.description ? updateData.description : undefined,
-      url:
-        updateData.website && updateData.website?.trim().length > 0
-          ? updateData.website
-          : undefined,
+      // url:
+      //   updateData.website && updateData.website?.trim().length > 0
+      //     ? updateData.website
+      //     : undefined,
     });
     await stripeApi.products.update(stripeProduct.id, {
       ...oldProductData,
@@ -99,3 +99,4 @@ export async function updateEvent(
 
   return newEvent;
 }
+

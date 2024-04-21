@@ -23,6 +23,11 @@ export const jwtPasswordResetConfig = {
   expiresIn: process.env.JWT_PASSWORD_RESET_TOKEN_EXPIRATION_TIME,
 };
 
+export const jwtPDFTicketQRCodeConfig = {
+  secret: process.env.JWT_PDF_TICKET_QRCODE_TOKEN_SECRET,
+  expiresIn: undefined,
+}
+
 
 const year = 1000 * 60 * 60 * 24 * 365;
 

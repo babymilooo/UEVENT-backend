@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import {
   httponlyCookiesOption,
   jwtAccessConfig,
+  jwtPDFTicketQRCodeConfig,
   jwtPasswordResetConfig,
   jwtRefreshConfig,
   jwtVerificationConfig,
@@ -20,6 +21,8 @@ export function getConfig(type: ETokenType) {
       return jwtVerificationConfig;
     case ETokenType.PasswordReset:
       return jwtPasswordResetConfig;
+    case ETokenType.QRCode:
+      return jwtPDFTicketQRCodeConfig;
     default:
       throw new Error(`Wrong token type`);
   }

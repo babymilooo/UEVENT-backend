@@ -1,10 +1,21 @@
 import { createTransport } from "nodemailer";
+import { IEvent } from "../models/events";
 import { IOrganization } from "../models/organizations";
+import { ITicket } from "../models/tickets";
+import { findEventById } from "../services/eventsService";
+import { signToken } from "../services/tokenService";
+import { ETokenType } from "../types/token";
+
+import path from "path";
+import puppeteer from "puppeteer";
+import * as QRCode from "qrcode";
 
 export const GMAIL_USERNAME = process.env.GMAIL_USERNAME;
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
 export const FRONTEND_URL = process.env.FRONTEND_URL;
 export const BACKEND_URL = process.env.BACKEND_URL;
+
+export const puppeteerBrowserPromise = puppeteer.launch();
 
 export const emailTransport = createTransport({
   service: "gmail",
@@ -65,4 +76,63 @@ export function organisationVerifiedEmail(org: IOrganization): string {
   <br/>
   Now you have the full access to your organisation actions.
   `;
+}
+
+export function ticketEmail(): string {
+  return `
+  Thank you for buying a ticket at UCODE MUSIC!
+  <br/>
+  Your ticket is attached to this email as PDF file.
+  `;
+}
+
+export async function ticketHtml(ticket: ITicket): Promise<string> {
+  let event: IEvent | null = null;
+  if (ticket.populated("event")) event = ticket.event as unknown as IEvent;
+  else event = await findEventById(ticket.event);
+  const ticketToken = await signToken(ETokenType.QRCode, { _id: ticket._id });
+  const qrSvg = await QRCode.toString(ticketToken, {
+    type: "svg",
+  });
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket</title>
+</head>
+<body>
+  <h2 style="text-align: center;">Ticket to ${event?.name}</h2>
+  <div style="display: block; width: 200px; height: 200px;">${qrSvg}</div>
+  <p>
+    Event Name: ${event?.name}
+    <br/>
+    Event Date: ${event?.date.toString()}
+    <br/>
+    Ticket Price: ${ticket.price / 100}$
+    <br/>
+    Owner Name: ${ticket.ownerName}
+    <br/>
+  </p>
+</body>
+</html>
+  `;
+}
+
+export async function htmlToTicket(
+  html: string,
+  filename: string,
+  callback: (absPath: string) => void
+) {
+  const browser = await puppeteerBrowserPromise;
+  const page = await browser.newPage();
+  await page.setContent(html);
+  await page.pdf({
+    path: "./ticketPDFs/" + filename,
+    format: "A4",
+  });
+  const absPath = path.resolve("./ticketPDFs/" + filename);
+  callback(absPath);
 }

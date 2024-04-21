@@ -3,9 +3,12 @@ import SMTPTransport from "nodemailer/lib/smtp-transport";
 import {
   GMAIL_USERNAME,
   emailTransport,
+  htmlToTicket,
   organisationVerifiedEmail,
   passwordChangeEmail,
   requestOrganisationVerificationEmail,
+  ticketEmail,
+  ticketHtml,
   verificationEmail,
 } from "../config/emailConfig";
 import { IUser } from "../models/user";
@@ -13,6 +16,9 @@ import { signToken } from "./tokenService";
 import { ETokenType } from "../types/token";
 import { findAllAdmins, findUserByEmail, findUserById } from "./userService";
 import { IOrganization } from "../models/organizations";
+import { ITicket } from "../models/tickets";
+import { IEvent } from "../models/events";
+import { findEventById } from "./eventsService";
 
 export async function sendMail(
   mailOptions: Options
@@ -78,5 +84,25 @@ export async function sendOrganisationVerifiedEmail(org: IOrganization) {
     subject: `Your Organisation ${org.name} has been verified`,
   };
   return await sendMail(opts);
+  
+}
+
+export async function sendTicketToOwnerAsPDF(ticket: ITicket): Promise<void> {
+  const emailHtml = ticketEmail();
+  const ticketHTML = await ticketHtml(ticket);
+  htmlToTicket(ticketHTML, `Ticket ${ticket.ownerName} ${ticket._id}.pdf`, async (absPath) => {
+    const opts: Options = {
+      to: ticket.ownerEmail,
+      from: GMAIL_USERNAME,
+      html: emailHtml,
+      subject: `Your ticket at UCODE MUSIC`,
+      attachments: [
+        {
+          path: absPath,
+        }
+      ],
+    };
+    sendMail(opts);
+  })
   
 }

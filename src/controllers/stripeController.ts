@@ -6,6 +6,7 @@ import { stripeApi } from "../config/stripeConfig";
 import Stripe from "stripe";
 import { FRONTEND_URL } from "../config/emailConfig";
 import { createNewTicket } from "../services/ticketService";
+import { sendTicketToOwnerAsPDF } from "../services/emailService";
 
 export async function createCheckoutSessionController(
   req: Request | any,
@@ -116,16 +117,25 @@ export async function getStripeSessionByIdController(req: Request, res: Response
   }
 }
 
-export async function stripeCheckoutWebhook(req: Request, res: Response) {
+export function stripeCheckoutWebhook(req: Request, res: Response) {
   const event: Stripe.Event = req.body;
   switch (event.type) {
     case 'checkout.session.completed':
       const session: Stripe.Checkout.Session = event.data.object;
-      const userEmail = session.customer_email;
+      const userEmail = session.customer_email || session.customer_details?.email;
+      // const userEmail = 'mark.tkachev2004@gmail.com'
+      
+      console.log(userEmail);
+      
       if (!userEmail) break;
       const { eventId, ownerName } = session.metadata as any;
+      console.log(session.metadata);
+      
       if (!eventId || !ownerName) break;
-      createNewTicket(eventId, userEmail, ownerName);
+      createNewTicket(eventId, userEmail, ownerName).then((ticket) => {
+        sendTicketToOwnerAsPDF(ticket).catch(() => (console.log('aboba')
+        ));
+      })
 
       break;
   

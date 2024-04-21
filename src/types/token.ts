@@ -8,4 +8,5 @@ export interface IAuthTokens {
     Refresh,
     Verification,
     PasswordReset,
+    QRCode,
   }
