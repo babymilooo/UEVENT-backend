@@ -70,6 +70,16 @@ export function requestOrganisationVerificationEmail(
   `;
 }
 
+export function eventReminderEmail(event: IEvent):string {
+  return `
+  Hey! The Event ${event.name} starts tomorrow!
+  <br/>
+  Don't forget to come in time!
+  <br/>
+  Yours UCODE MUSIC
+  `
+}
+
 export function organisationVerifiedEmail(org: IOrganization): string {
   return `
   Congratulations! Your organisation ${org.name} has been verified by one of our admins.

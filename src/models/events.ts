@@ -11,6 +11,8 @@ export interface ISchemaEvent {
   attendees: Types.ObjectId[];
   price: number;
   stripeProductId?: string;
+  reminderSent: boolean;
+  readonly isOver: boolean;
 }
 
 const eventSchema = new Schema<ISchemaEvent>({
@@ -53,10 +55,18 @@ const eventSchema = new Schema<ISchemaEvent>({
     min: 50,
     required: true,
   },
-  // TODO - create/update stripe product with event
   stripeProductId: {
     type: String,
   },
+  reminderSent: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+});
+
+eventSchema.virtual("isOver").get(function () {
+  return this.date >= new Date();
 });
 
 export const Event = model<ISchemaEvent>("Event", eventSchema);
