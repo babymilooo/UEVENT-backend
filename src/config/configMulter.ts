@@ -4,7 +4,7 @@ import fs from "fs";
 
 
 function createMulterConfig(dirName: string) {
-  const targetDir = path.join(__dirname, "..", "static", dirName);
+  const targetDir = path.join(__dirname, "..", "..", "static", dirName);
 
   if (!fs.existsSync(targetDir)) 
     fs.mkdirSync(targetDir, { recursive: true });
@@ -23,6 +23,11 @@ function createMulterConfig(dirName: string) {
 }
 
 const uploadAvatars = createMulterConfig("avatars");
-const uploadOrganizationImages = createMulterConfig("organization_images");
+const uploadOrganizationImages = createMulterConfig("organizations");
 
-export { uploadAvatars, uploadOrganizationImages };
+const uploadMultiple = uploadOrganizationImages.fields([
+  { name: 'logo', maxCount: 1 },
+  { name: 'picture', maxCount: 1 }
+]);
+
+export { uploadAvatars, uploadOrganizationImages, uploadMultiple };

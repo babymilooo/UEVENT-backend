@@ -4,10 +4,10 @@ import {
   updateUser,
   removeSensitiveData,
   findUserById,
-  handleImageUpdate,
   getPublicUserInfo,
 } from "../services/userService";
 import { errorMessageObj } from "../helpers/errorMessageObj";
+import { handleImageUpdate, removeFiles } from "../helpers/updateAndDeleteImage";
 
 export async function updateProfile(
   req: Request & { file?: Express.Multer.File },
@@ -32,11 +32,14 @@ export async function updateProfile(
       updateData.passwordHash = passwordHash;
       delete updateData.password;
     }
-    await handleImageUpdate(currentUser, updateData, "profilePicture",  req.file);
+    const file: Express.Multer.File = req.files as any;
+    await handleImageUpdate(updateData, "profilePicture",  file);
 
     const updateInfoUser = await updateUser(userId, updateData);
     res.status(200).json(await removeSensitiveData(updateInfoUser));
   } catch (error) {
+    if (req.files)
+      await removeFiles(req.files);
     res.status(500).json(errorMessageObj("Failed to update profile"));
   }
 }

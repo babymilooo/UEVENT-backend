@@ -24,8 +24,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.use('/static/avatars', express.static('src/static/avatars'));
-app.use('/static/organization_images', express.static('src/static/organization_images'));
+app.use('/static/avatars', express.static('static/avatars'));
+app.use('/static/organizations', express.static('static/organizations'));
 
 app.use('/auth', authRouter);
 app.use('/artists', artistRouter);

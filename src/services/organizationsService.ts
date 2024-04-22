@@ -2,7 +2,8 @@ import { IOrganization, Organization } from "../models/organizations";
 import { Event } from "../models/events";
 import { IOrganizationDto, IOrganizationUpdateDto }  from "../types/organization";
 import mongoose, { Types } from 'mongoose';
-
+import { emailRegex } from "../helpers/emailRegex";
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
 export async function createNewOrganization(orgDTO: IOrganizationDto, userId: string) {
   try {
@@ -25,6 +26,29 @@ export async function createNewOrganization(orgDTO: IOrganizationDto, userId: st
   } catch (error) {
     throw error;
   }
+}
+
+export async function validateEmail(email: string) {
+  if (!emailRegex.test(email))
+    throw new Error("Invalid email format.");
+}
+
+export async function validatePhone(phone: string) {
+  // Validate phone number
+  try {
+    const phoneNumber = parsePhoneNumberFromString(phone);
+    if (!phoneNumber || !phoneNumber.isValid())
+      throw new Error("Invalid phone number.");
+  } catch (error) {
+    throw new Error("Invalid phone number format.");
+  }
+}
+
+export async function validateContactDetails(email: string, phone: string) {
+  if (email)
+    await validateEmail(email);
+  if(phone) 
+    await validatePhone(phone);
 }
 
 
@@ -56,12 +80,22 @@ export async function findOrganizationById(id: string | Types.ObjectId) {
   return org;
 }
 
+
+export async function addFollowerCount(organization: any) {
+  return {
+    ...organization._doc,
+    followerCount: organization.followers.length
+  }
+}
+
+
 export async function addFollower(organization: any, userId: string) {
   if (organization.followers.some((id: any) => id.toString() === userId)) 
-    throw new Error('You are already following this organization');
+    organization.followers = organization.followers.filter((id: any) => id.toString() !== userId);
+  else
+    organization.followers.push(new mongoose.Types.ObjectId(userId));
   
-  organization.followers.push(new mongoose.Types.ObjectId(userId));
-  await organization.save();
+    await organization.save();
   return organization;
 }
 
@@ -81,10 +115,37 @@ export async function getEventsByIdOrganization(orgId: string, skip: number, lim
                             .limit(limit);
 }
 
-export async function getOrganizationsByCreate(userId: string) {
-  return await Organization.find({ createdBy: userId });
+export async function getOrganizations(query: Record<string, any>, page: number, limit: number) {
+  const skip = (page - 1) * limit; 
+  const organizations = await Organization.find(query).skip(skip).limit(limit);
+  const organizationsWithFollowerCount = await Promise.all(
+    organizations.map(addFollowerCount)
+  );
+  return organizationsWithFollowerCount;
 }
 
-export async function getOrganizationIfUserInFollowers(userId: string) {
-  return await Organization.find({ followers: userId });
+export async function getOrganizationsByName(name: string, page: number, limit: number) {
+  const regex = new RegExp(name, 'i'); 
+  const skip = (page - 1) * limit;
+  const organizations = await Organization.find({ name: regex }).skip(skip).limit(limit);
+  const organizationsWithFollowerCount = await Promise.all(
+    organizations.map(addFollowerCount)
+  ); 
+  return organizationsWithFollowerCount;
 }
+
+// export async function getOrganizationsByCreate(userId: string) {
+//   const organizations = await Organization.find({ createdBy: userId });
+//   const organizationsWithFollowerCount = await Promise.all(
+//     organizations.map(addFollowerCount)
+//   );
+//   return organizationsWithFollowerCount;
+// }
+
+// export async function getOrganizationIfUserInFollowers(userId: string) {
+//   const organizations = await Organization.find({ followers: userId });
+//   const organizationsWithFollowerCount = await Promise.all(
+//     organizations.map(org => addFollowerCount(org))
+//   );
+//   return organizationsWithFollowerCount;
+// }

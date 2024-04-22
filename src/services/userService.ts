@@ -4,8 +4,6 @@ import { emailRegex } from "../helpers/emailRegex";
 import { User } from "../models/user";
 import { IUserDto, IUserUpdateDto } from "../types/user";
 import { refreshSpotifyAccessToken } from "../services/tokenService";
-import fs from 'fs';
-import path from "path";
 import { sendVerificationEmail } from "./emailService";
 import { Types } from "mongoose";
 
@@ -162,24 +160,6 @@ export async function getRefreshTokenForUser(userId: string) {
 }
 
 
-export async function handleImageUpdate(entity: any, updateData: any, imageField: string, file?: Express.Multer.File) {
-  const currentImagePath = entity[imageField];
-
-  if (currentImagePath) {
-    const oldImagePath = path.join('src', 'static', currentImagePath.replace(`${process.env.BACKEND_URL}/static`, ''));
-    try {
-      if (fs.existsSync(oldImagePath))
-        fs.unlinkSync(oldImagePath);
-    } catch (error) {
-      console.error(`Error deleting old ${imageField}:`, error);
-    }
-  }
-
-  if (file && file.path) {
-    const relativeFilePath = file.path.split('src/static')[1];
-    updateData[imageField] = `${process.env.BACKEND_URL}/static${relativeFilePath}`;
-  }
-}
 
 
 

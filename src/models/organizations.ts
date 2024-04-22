@@ -1,15 +1,22 @@
 import { HydratedDocument, Schema, model, Types } from "mongoose";
+import { emailRegex } from "../helpers/emailRegex";
 
 export interface IShemaOrganization {
   _id: string;
   createdBy: Types.ObjectId;
   name: string; 
+  email: string; 
+  phone: string;
   description?: string;
   website?: string;
-  location?: string;
+  location?: {
+    latitude: string;
+    longitude: string;
+  };
   isVerified: boolean; 
   followers: Types.ObjectId[]; 
   picture?: string;
+  logo?: string;
 }
 
 const organizationSchema = new Schema<IShemaOrganization>({
@@ -21,7 +28,8 @@ const organizationSchema = new Schema<IShemaOrganization>({
   name: { 
     type: String, 
     required: true,
-    trim: true 
+    trim: true,
+    unique: true 
   },
   description: { 
     type: String, 
@@ -32,8 +40,14 @@ const organizationSchema = new Schema<IShemaOrganization>({
     default: "" 
   },
   location: { 
-    type: String, 
-    default: "" 
+    latitude: {
+      type: String,
+      default: ""
+    },
+    longitude: {
+      type: String,
+      default: ""
+    }
   },
   isVerified: { 
     type: Boolean, 
@@ -46,7 +60,24 @@ const organizationSchema = new Schema<IShemaOrganization>({
   }],
   picture : { 
     type: String, 
-    default: "" 
+    default: ""
+  },
+  logo: {
+    type: String,
+    default: ""
+  },
+  email: {
+    type: String,
+    required() {
+      return emailRegex.test(this.email);
+    },
+    trim: true,
+    unique: true,
+  },
+  phone: { 
+    type: String,
+    default: "",
+    required: true 
   }
 });
 
