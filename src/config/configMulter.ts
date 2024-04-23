@@ -23,11 +23,12 @@ function createMulterConfig(dirName: string) {
 }
 
 const uploadAvatars = createMulterConfig("avatars");
-const uploadOrganizationImages = createMulterConfig("organizations");
+const uploadOrganizationLogo = createMulterConfig("organizations/logo");
+const uploadOrganizationPicture = createMulterConfig("organizations/picture");
 
-const uploadMultiple = uploadOrganizationImages.fields([
-  { name: 'logo', maxCount: 1 },
-  { name: 'picture', maxCount: 1 }
-]);
+// const uploadMultiple = uploadOrganizationImages.fields([
+//   { name: 'logo', maxCount: 1 },
+//   { name: 'picture', maxCount: 1 }
+// ]);
 
-export { uploadAvatars, uploadOrganizationImages, uploadMultiple };
+export { uploadAvatars, uploadOrganizationLogo, uploadOrganizationPicture };

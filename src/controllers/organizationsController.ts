@@ -69,19 +69,40 @@ export async function updateOrganization(req: Request, res: Response) {
   }
 }
 
-export async function updateOrganizationImage(req: Request, res: Response) {
+export async function updateOrganizationLogo(req: Request, res: Response) {
   try {
     const orgId = req.params.orgId; 
-    const files: { [fieldname: string]: Express.Multer.File[] } = req.files as any;
-
-    if (!files || Object.keys(files).length === 0)
+    const file: Express.Multer.File = req.files as any;
+    if (file)
       return res.status(400).json(errorMessageObj("No image uploaded."));
     
     const currentOrg = await findOrganizationById(orgId);
-    await handleImageUpdate(currentOrg, "", files);
+    await handleImageUpdate(currentOrg, "logo", file);
     await currentOrg.save();
 
-    res.status(200).json(await addFollowerCount(currentOrg));
+    res.status(200).json(currentOrg.logo);
+  } catch (error: any) {
+    if (req.files)
+      await removeFiles(req.files);
+    if (error instanceof Error) 
+      res.status(500).json(errorMessageObj(error.message));
+    else
+      res.status(500).json(errorMessageObj("An error occurred while updating the image."));
+  }
+}
+
+export async function updateOrganizationPicture(req: Request, res: Response) {
+  try {
+    const orgId = req.params.orgId; 
+    const file: Express.Multer.File = req.files as any;
+    if (file)
+      return res.status(400).json(errorMessageObj("No image uploaded."));
+    
+    const currentOrg = await findOrganizationById(orgId);
+    await handleImageUpdate(currentOrg, "picture", file);
+    await currentOrg.save();
+
+    res.status(200).json(currentOrg.picture);
   } catch (error: any) {
     if (req.files)
       await removeFiles(req.files);
