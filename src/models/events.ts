@@ -13,6 +13,10 @@ export interface ISchemaEvent {
   stripeProductId?: string;
   reminderSent: boolean;
   readonly isOver: boolean;
+  location?: {
+    latitude: string;
+    longitude: string;
+  };
 }
 
 const eventSchema = new Schema<ISchemaEvent>({
@@ -62,6 +66,16 @@ const eventSchema = new Schema<ISchemaEvent>({
     type: Boolean,
     required: true,
     default: false,
+  },
+  location: { 
+    latitude: {
+      type: String,
+      default: ""
+    },
+    longitude: {
+      type: String,
+      default: ""
+    }
   },
 });
 
