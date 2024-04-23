@@ -3,6 +3,10 @@ import { ITicket, Ticket } from "../models/tickets";
 import { findEventById } from "./eventsService";
 import { findUserByEmail } from "./userService";
 
+export async function deleteTicketById(id:string | Types.ObjectId) {
+  return await Ticket.findByIdAndDelete(id);
+}
+
 export async function findTicketById(id: string | Types.ObjectId) {
   return await Ticket.findById(id).exec();
 }

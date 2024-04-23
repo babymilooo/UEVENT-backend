@@ -9,6 +9,7 @@ import { userRouter } from "./routers/userRouter";
 import { organizationRouter } from "./routers/organizationsRouter";
 import { stripeRouter } from "./routers/stripeRouter";
 import { eventsRouter } from "./routers/eventsRouter";
+import { ticketRouter } from "./routers/ticketRouter";
 
 const app = express();
 
@@ -33,5 +34,6 @@ app.use('/user', userRouter);
 app.use('/organization', organizationRouter);
 app.use('/stripe', stripeRouter);
 app.use('/events', eventsRouter);
+app.use('/tickets', ticketRouter);
 
 export default app;
