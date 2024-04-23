@@ -25,6 +25,7 @@ import path from "path";
 // }
 
 
+
 export async function handleImageUpdate(updateData: any, nameFile: string, files: { [fieldname: string]: Express.Multer.File[] } | Express.Multer.File ) {
   if (Array.isArray(files)) {
     files.forEach((file) => {
@@ -55,6 +56,15 @@ export async function updateFile(updateData: any, fieldname: string, file: Expre
     
     const relativeFilePath = file.path.split('static')[1];
     updateData[fieldname] = `${process.env.BACKEND_URL}/static${relativeFilePath}`;
+  }
+}
+
+export async function removeSingleFile(file: Express.Multer.File) {
+  try {
+    await fs.promises.unlink(file.path);
+    console.log(`Successfully removed file: ${file.path}`);
+  } catch (error) {
+    console.error(`Error removing file: ${file.path}`, error);
   }
 }
 

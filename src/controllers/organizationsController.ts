@@ -17,7 +17,7 @@ import {
   getOrganizationsByName
  } from "../services/organizationsService";
 import { IOrganizationUpdateDto, IOrganizationDto } from "../types/organization";
-import { handleImageUpdate, removeFiles } from "../helpers/updateAndDeleteImage";
+import { updateFile, removeSingleFile } from "../helpers/updateAndDeleteImage";
 import { sendOrganisationVerifiedEmail, sendRequestOrgVerificationEmail } from "../services/emailService";
 
 
@@ -72,18 +72,18 @@ export async function updateOrganization(req: Request, res: Response) {
 export async function updateOrganizationLogo(req: Request, res: Response) {
   try {
     const orgId = req.params.orgId; 
-    const file: Express.Multer.File = req.files as any;
-    if (file)
+    const file: Express.Multer.File = req.file as any;
+    if (!file)
       return res.status(400).json(errorMessageObj("No image uploaded."));
     
     const currentOrg = await findOrganizationById(orgId);
-    await handleImageUpdate(currentOrg, "logo", file);
+    await updateFile(currentOrg, "logo", file);
     await currentOrg.save();
 
     res.status(200).json(currentOrg.logo);
   } catch (error: any) {
-    if (req.files)
-      await removeFiles(req.files);
+    if (req.file)
+      await removeSingleFile(req.file);
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));
     else
@@ -99,13 +99,13 @@ export async function updateOrganizationPicture(req: Request, res: Response) {
       return res.status(400).json(errorMessageObj("No image uploaded."));
     
     const currentOrg = await findOrganizationById(orgId);
-    await handleImageUpdate(currentOrg, "picture", file);
+    await updateFile(currentOrg, "picture", file);
     await currentOrg.save();
 
     res.status(200).json(currentOrg.picture);
   } catch (error: any) {
-    if (req.files)
-      await removeFiles(req.files);
+    if (req.file)
+      await removeSingleFile(req.file);
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));
     else
@@ -171,7 +171,7 @@ export async function getOrganizationById(req: Request, res: Response) {
   try {
     const { orgId } = req.params;
     const organization = await findOrganizationById(orgId);
-    if (!organization)
+    if (!organization || !organization.isVerified)
       return res.status(404).json(errorMessageObj("Organization not found or not verified"));
 
     res.status(200).json(await addFollowerCount(organization));
