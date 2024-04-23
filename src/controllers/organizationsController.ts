@@ -30,17 +30,12 @@ export async function createOrganization(req: Request, res: Response) {
 
     await validateContactDetails(orgData.email, orgData.phone);
 
-    const files: { [fieldname: string]: Express.Multer.File[] } = req.files as any;
-    await handleImageUpdate(orgData, "", files);
-  
     const newOrganization = await createNewOrganization(orgData, userId);
     //asyncronously send emails to admins
     await sendRequestOrgVerificationEmail(newOrganization);
 
     res.status(200).json(await addFollowerCount(newOrganization));
   } catch (error: any) {
-    if (req.files)
-      await removeFiles(req.files);
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));
     else
@@ -63,20 +58,37 @@ export async function updateOrganization(req: Request, res: Response) {
       if (existingOrg && existingOrg._id !== orgId)
         return res.status(409).json(errorMessageObj("An organization with this name already exists"));
     }
-    
-    const files: { [fieldname: string]: Express.Multer.File[] } = req.files as any;
-    await handleImageUpdate(currentOrg, "", files);
-    await currentOrg.save();
   
     const updatedOrganization = await updateOrganizationByIdAndUserId(orgId, userId, updateData);
     res.status(200).json(await addFollowerCount(updatedOrganization));
+  } catch (error: any) {
+    if (error instanceof Error) 
+      res.status(500).json(errorMessageObj(error.message));
+    else
+      res.status(500).json(errorMessageObj("An error occurred while editing the organization"));
+  }
+}
+
+export async function updateOrganizationImage(req: Request, res: Response) {
+  try {
+    const orgId = req.params.orgId; 
+    const files: { [fieldname: string]: Express.Multer.File[] } = req.files as any;
+
+    if (!files || Object.keys(files).length === 0)
+      return res.status(400).json(errorMessageObj("No image uploaded."));
+    
+    const currentOrg = await findOrganizationById(orgId);
+    await handleImageUpdate(currentOrg, "", files);
+    await currentOrg.save();
+
+    res.status(200).json(await addFollowerCount(currentOrg));
   } catch (error: any) {
     if (req.files)
       await removeFiles(req.files);
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));
     else
-      res.status(500).json(errorMessageObj("An error occurred while editing the organization"));
+      res.status(500).json(errorMessageObj("An error occurred while updating the image."));
   }
 }
 

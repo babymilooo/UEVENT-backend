@@ -9,7 +9,8 @@ import {
   getEventsByOrganization,
   getMyOrganizations,
   getOrganizationsIFollow,
-  searchOrganizations
+  searchOrganizations, 
+  updateOrganizationImage
  } from "../controllers/organizationsController";
 import { authGuard } from "../helpers/authGuard";
 import { refreshTokenMiddleware } from "../helpers/refreshTokenMiddleware";
@@ -18,8 +19,9 @@ import { uploadMultiple } from "../config/configMulter";
 const organizationRouter = express.Router();
 
 
-organizationRouter.post("/create-organization", authGuard, refreshTokenMiddleware, uploadMultiple, createOrganization);
-organizationRouter.patch("/edit-organization/:orgId", authGuard, refreshTokenMiddleware, uploadMultiple, updateOrganization);
+organizationRouter.post("/create-organization", authGuard, refreshTokenMiddleware, createOrganization);
+organizationRouter.patch("/edit-organization/:orgId", authGuard, refreshTokenMiddleware, updateOrganization);
+organizationRouter.patch("/edit-organization-image/:orgId", authGuard, refreshTokenMiddleware, uploadMultiple, updateOrganizationImage);
 organizationRouter.post("/verify-organization/:orgId", adminAuthGuard, refreshTokenMiddleware, verifyOrganizationByAdmin);
 organizationRouter.post("/follow-organization/:orgId", authGuard, refreshTokenMiddleware, addFollowerOrganization);
 organizationRouter.get("/get-organization/:orgId", getOrganizationById);
