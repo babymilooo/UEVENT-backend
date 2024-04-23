@@ -140,7 +140,7 @@ export async function updateUserInformation(user: any, refreshToken: string, pro
 
 export async function findOrCreateUser(spotifyApi: any, me: any, refreshToken: string) {
   let user = await findUserByEmail(me.email);
-  const profilePictureUrl = me.images.length > 0 ? me.images[0].url : "";
+  const profilePictureUrl = me.images.length > 0 ? me.images[1].url : "";
   if (!user) {
     user = await createSpotifyUser(me, refreshToken);
   } else {
