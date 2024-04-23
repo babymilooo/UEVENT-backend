@@ -150,7 +150,7 @@ export async function getOrganizationById(req: Request, res: Response) {
   try {
     const { orgId } = req.params;
     const organization = await findOrganizationById(orgId);
-    if (!organization || !organization.isVerified)
+    if (!organization)
       return res.status(404).json(errorMessageObj("Organization not found or not verified"));
 
     res.status(200).json(await addFollowerCount(organization));
