@@ -10,9 +10,10 @@ import { organizationRouter } from "./routers/organizationsRouter";
 import { stripeRouter } from "./routers/stripeRouter";
 import { eventsRouter } from "./routers/eventsRouter";
 import { ticketRouter } from "./routers/ticketRouter";
+import { ticketOptionsRouter } from "./routers/ticketOptionsRouter";
 
 const app = express();
-const bodyParser = require('body-parser');
+import bodyParser = require("body-parser");
 
 app.use(bodyParser.json({ limit: '10mb' })); // Установка максимального размера для JSON-данных
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
@@ -39,5 +40,6 @@ app.use('/organization', organizationRouter);
 app.use('/stripe', stripeRouter);
 app.use('/events', eventsRouter);
 app.use('/tickets', ticketRouter);
+app.use('/ticketOptions', ticketOptionsRouter);
 
 export default app;

@@ -2,7 +2,8 @@ import { HydratedDocument, Schema, model, Types } from "mongoose";
 import { emailRegex } from "../helpers/emailRegex";
 
 interface ISchemaTicket {
-  event: Types.ObjectId; 
+  event: Types.ObjectId;
+  ticketOption: Types.ObjectId; 
   owner?: Types.ObjectId; 
   ownerEmail: string;
   ownerName: string;
@@ -15,6 +16,11 @@ const ticketSchema = new Schema<ISchemaTicket>({
   event: {
     type: Schema.Types.ObjectId,
     ref: "Event",
+    required: true,
+  },
+  ticketOption: {
+    type: Schema.Types.ObjectId,
+    ref: "TicketOption",
     required: true,
   },
   owner: {

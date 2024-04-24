@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 import { ITicket, Ticket } from "../models/tickets";
 import { findEventById } from "./eventsService";
 import { findUserByEmail } from "./userService";
+import { findTicketOption } from "./ticketOptionService";
 
 export async function deleteTicketById(id:string | Types.ObjectId) {
   return await Ticket.findByIdAndDelete(id);
@@ -27,11 +28,13 @@ export async function findTicketsByOwnerEmailAndEventId(
 }
 
 export async function createNewTicket(
-  eventId: string | Types.ObjectId,
+  ticketOptionId: string | Types.ObjectId,
   ownerEmail: string,
   ownerName: string
 ): Promise<ITicket> {
-  const event = await findEventById(eventId);
+  const ticketOption = await findTicketOption(ticketOptionId);
+  if (!ticketOption) throw new Error("TicketOption not found");
+  const event = await findEventById(ticketOption.event);
   if (!event) throw new Error("Event not found");
   const user = await findUserByEmail(ownerEmail);
 
@@ -39,9 +42,10 @@ export async function createNewTicket(
     const newTicket = new Ticket({
       event: event._id,
       owner: user._id,
+      ticketOption: ticketOption._id,
       ownerEmail,
       ownerName,
-      price: event.price,
+      price: ticketOption.price,
       category: "Ticket",
       isUsed: false,
     });
@@ -50,9 +54,10 @@ export async function createNewTicket(
   } else {
     const newTicket = new Ticket({
       event: event._id,
+      ticketOption: ticketOption._id,
       ownerEmail,
       ownerName,
-      price: event.price,
+      price: ticketOption.price,
       category: "Ticket",
       isUsed: false,
     });

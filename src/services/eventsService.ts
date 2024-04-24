@@ -34,18 +34,6 @@ export async function createNewEvent(data: IEventDto): Promise<IEvent> {
     ...data,
     attendees: [],
   });
-  
-  const stripeProduct = await stripeApi.products.create({
-    name: `Ticket ${newEvent.name}`,
-    description: newEvent.description ? newEvent.description : '',
-    metadata: objDataToString(newEvent.toObject()),
-    default_price_data: {
-      currency: "USD",
-      unit_amount: newEvent.price,
-    },
-    // url: newEvent.website ? newEvent.website : '',
-  });
-  newEvent.stripeProductId = stripeProduct.id;
   await newEvent.save();
 
   return newEvent;
@@ -57,42 +45,8 @@ export async function updateEvent(
 ): Promise<IEvent> {
   const event = await findEventById(id);
   if (!event) throw new Error("Event not found");
+
   
-
-  const productId = event.stripeProductId;
-  if (productId) {
-    // update stripe product
-    const stripeProduct = await stripeApi.products.retrieve(productId);
-    const oldProductData = removeUndefKeys({
-      name: stripeProduct.name,
-      description: stripeProduct.description,
-      url: stripeProduct.url,
-    });
-    const newProductData = removeUndefKeys({
-      name: updateData.name ? `Ticket ${updateData.name}` : undefined,
-      description: updateData.description ? updateData.description : undefined,
-      // url:
-      //   updateData.website && updateData.website?.trim().length > 0
-      //     ? updateData.website
-      //     : undefined,
-    });
-    await stripeApi.products.update(stripeProduct.id, {
-      ...oldProductData,
-      ...newProductData
-    });
-
-    //update stripe price if needed
-    const priceId = stripeProduct.default_price as string;
-    if (updateData.price && priceId) {
-      await stripeApi.prices.update(priceId, {
-        currency_options: {
-          USD: {
-            unit_amount: updateData.price,
-          },
-        },
-      });
-    }
-  }
   await event.updateOne(updateData).exec();
   const newEvent = await findEventById(id);
   if (!newEvent) throw new Error("Event not found");

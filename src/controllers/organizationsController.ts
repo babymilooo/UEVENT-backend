@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import e, { Request, Response } from "express";
 import { errorMessageObj } from "../helpers/errorMessageObj";
 import { 
   createNewOrganization,
@@ -173,7 +173,7 @@ export async function getOrganizationById(req: Request, res: Response) {
     const organization = await findOrganizationById(orgId);
     if (!organization || !organization.isVerified)
       return res.status(404).json(errorMessageObj("Organization not found or not verified"));
-
+    
     res.status(200).json(await addFollowerCount(organization));
   } catch (error) {
     if (error instanceof Error) 
@@ -191,6 +191,10 @@ export async function getEventsByOrganization(req:  Request, res: Response) {
     const skip = (page - 1) * limit;
 
     const events = await getEventsByIdOrganization(orgId, skip, limit);
+    for (const e of events) {
+      await e.populate('ticketOptions');
+    }
+    
 
     res.status(200).json(events);
   } catch (error) {

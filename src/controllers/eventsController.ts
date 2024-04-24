@@ -9,6 +9,24 @@ import {
   findEventById,
   updateEvent,
 } from "../services/eventsService";
+import { getTicketOptionsOfEvent } from "../services/ticketOptionService";
+
+export async function getTicketOptionsOfEventController(
+  req: Request,
+  res: Response
+) {
+  try {
+    const { eventId } = req.params;
+    const event = await findEventById(eventId);
+    if (!event) return res.status(404).json(errorMessageObj('Event not found'));
+
+    const tOpts = await getTicketOptionsOfEvent(event._id);
+    return res.json(tOpts);
+  } catch (error) {
+    console.error(error);
+    return res.status(404).json(errorMessageObj('Ticket Options not found'))
+  }
+}
 
 export async function createEventController(req: Request | any, res: Response) {
   try {
@@ -37,8 +55,9 @@ export async function createEventController(req: Request | any, res: Response) {
       return res.status(400).json(errorMessageObj("Minimal price is 50 cents"));
 
     const event = await createNewEvent(data);
+    await event.populate('ticketOptions');
     const respData = event.toObject();
-    delete respData.stripeProductId;
+
     return res.status(201).json(respData);
   } catch (error) {
     console.error(error);
@@ -60,9 +79,8 @@ export async function updateEventController(req: Request | any, res: Response) {
       return res.status(400).json(errorMessageObj("Minimal price is 50 cents"));
 
     const updatedEvent = await updateEvent(event._id, data);
-
+    await updatedEvent.populate('ticketOptions');
     const respData = updatedEvent.toObject();
-    delete respData.stripeProductId;
     return res.json(respData);
 
   } catch (error) {

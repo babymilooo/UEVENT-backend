@@ -9,6 +9,8 @@ import { ETokenType } from "../types/token";
 import path from "path";
 import puppeteer from "puppeteer";
 import * as QRCode from "qrcode";
+import { ITicketOption } from "../models/ticketOptions";
+import { findTicketOption } from "../services/ticketOptionService";
 
 export const GMAIL_USERNAME = process.env.GMAIL_USERNAME;
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
@@ -100,6 +102,9 @@ export async function ticketHtml(ticket: ITicket): Promise<string> {
   let event: IEvent | null = null;
   if (ticket.populated("event")) event = ticket.event as unknown as IEvent;
   else event = await findEventById(ticket.event);
+  let ticketOption: ITicketOption | null = null;
+  if (ticket.populated("ticketOption")) ticketOption = ticket.ticketOption as unknown as ITicketOption;
+  else ticketOption = await findTicketOption(ticket.ticketOption);
   const ticketToken = await signToken(ETokenType.QRCode, { _id: ticket._id });
   const qrSvg = await QRCode.toString(ticketToken, {
     type: "svg",
@@ -119,11 +124,15 @@ export async function ticketHtml(ticket: ITicket): Promise<string> {
   <p>
     Event Name: ${event?.name}
     <br/>
+    Ticket Type: ${ticketOption?.name}
+    <br/>
     Event Date: ${event?.date.toString()}
     <br/>
     Ticket Price: ${ticket.price / 100}$
     <br/>
     Owner Name: ${ticket.ownerName}
+    <br/>
+    Ticket Description: ${ticketOption?.description}
     <br/>
   </p>
 </body>

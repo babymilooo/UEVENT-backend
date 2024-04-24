@@ -7,25 +7,21 @@ import Stripe from "stripe";
 import { FRONTEND_URL } from "../config/emailConfig";
 import { createNewTicket } from "../services/ticketService";
 import { sendTicketToOwnerAsPDF } from "../services/emailService";
+import { findTicketOption } from "../services/ticketOptionService";
 
 export async function createCheckoutSessionController(
   req: Request | any,
   res: Response
 ) {
   try {
-    const { eventId, ownerName } = req.body;
-    if (!eventId)
-      return res.status(400).json(errorMessageObj("eventId is required"));
+    const { ticketOptionId, ownerName } = req.body;
+    if (!ticketOptionId || typeof ticketOptionId !== 'string')
+      return res.status(400).json(errorMessageObj("ticketOptionId is required"));
     if (!ownerName || typeof ownerName !== 'string') return res.status(400).json(errorMessageObj("ownerName is required"));
-    const event = await Event.findById(eventId).exec();
-    if (!event) return res.status(404).json(errorMessageObj("Event not found"));
-    if (!event.stripeProductId)
-      return res
-        .status(404)
-        .json(
-          errorMessageObj("Event has no associated product(No price is set)")
-        );
-    const product = await stripeApi.products.retrieve(event.stripeProductId, {
+    const ticketOption = await findTicketOption(ticketOptionId);
+    if (!ticketOption) return res.status(404).json(errorMessageObj("TicketOption not found"));
+    
+    const product = await stripeApi.products.retrieve(ticketOption.stripeProductId, {
       expand: ["default_price"],
     });
     if (!product)
@@ -63,7 +59,8 @@ export async function createCheckoutSessionController(
         ],
         return_url: `${FRONTEND_URL}/payment-return?session_id={CHECKOUT_SESSION_ID}`,
         metadata: {
-          eventId: eventId,
+          ticketOptionId: ticketOptionId,
+          eventId: ticketOption.event.toString(),
           userId: userId,
           ownerName
         },
@@ -82,7 +79,8 @@ export async function createCheckoutSessionController(
         ],
         return_url: `${FRONTEND_URL}/payment-return?session_id={CHECKOUT_SESSION_ID}`,
         metadata: {
-          eventId: eventId,
+          ticketOptionId: ticketOptionId,
+          eventId: ticketOption.event.toString(),
           ownerName
         },
       });
@@ -107,7 +105,7 @@ export async function getStripeSessionByIdController(req: Request, res: Response
     if (!session)
       return res.status(404).json(errorMessageObj("Session not found"));
 
-    res.json({
+    return res.json({
       status: session.status,
       customer_email: session.customer_email,
     });
@@ -128,11 +126,11 @@ export function stripeCheckoutWebhook(req: Request, res: Response) {
       console.log(userEmail);
       
       if (!userEmail) break;
-      const { eventId, ownerName } = session.metadata as any;
+      const { eventId: ticketOptionId, ownerName } = session.metadata as any;
       console.log(session.metadata);
       
-      if (!eventId || !ownerName) break;
-      createNewTicket(eventId, userEmail, ownerName).then((ticket) => {
+      if (!ticketOptionId || !ownerName) break;
+      createNewTicket(ticketOptionId, userEmail, ownerName).then((ticket) => {
         sendTicketToOwnerAsPDF(ticket).catch(() => (console.log('aboba')
         ));
       })

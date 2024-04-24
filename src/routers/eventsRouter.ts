@@ -4,10 +4,13 @@ import { refreshTokenMiddleware } from "../helpers/refreshTokenMiddleware";
 import {
   createEventController,
   deleteEventController,
+  getTicketOptionsOfEventController,
   updateEventController,
 } from "../controllers/eventsController";
 
 const eventsRouter = Router();
+
+eventsRouter.get("/:eventId/ticketOptions", getTicketOptionsOfEventController);
 
 eventsRouter.post(
   "/create",

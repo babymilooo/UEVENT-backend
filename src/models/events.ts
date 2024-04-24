@@ -10,7 +10,7 @@ export interface ISchemaEvent {
   website?: string;
   attendees: Types.ObjectId[];
   price: number;
-  stripeProductId?: string;
+  ticketOptions: Types.ObjectId[];
   reminderSent: boolean;
   readonly isOver: boolean;
   location?: {
@@ -49,18 +49,19 @@ const eventSchema = new Schema<ISchemaEvent>({
   },
   attendees: [
     {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
     },
   ],
+  ticketOptions: [{
+    type: Schema.Types.ObjectId,
+    ref: "TicketOption"
+  }],
   //price in USD cents
   price: {
     type: Number,
     min: 50,
     required: true,
-  },
-  stripeProductId: {
-    type: String,
   },
   reminderSent: {
     type: Boolean,
