@@ -19,7 +19,7 @@ app.use(bodyParser.json({ limit: '10mb' })); // Установка максим�
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
 app.use(morgan("dev"));
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: "same-site" } }));
 app.use(
   cors({
     credentials: true,
