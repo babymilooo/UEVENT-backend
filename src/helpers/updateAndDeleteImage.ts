@@ -45,7 +45,7 @@ export async function updateFile(updateData: any, fieldname: string, file: Expre
     const currentImagePath = updateData[fieldname];
     
     if (currentImagePath) {
-      const oldImagePath = path.join('static', currentImagePath.replace(`${process.env.BACKEND_URL}/static/`, ''));
+      const oldImagePath = path.posix.join('static', currentImagePath.replace(`${process.env.BACKEND_URL}/static/`, ''));
       try {
         if (fs.existsSync(oldImagePath)) 
           fs.promises.unlink(oldImagePath);
