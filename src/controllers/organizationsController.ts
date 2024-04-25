@@ -17,7 +17,8 @@ import {
   getOrganizationsByName,
   modifyOrganizationPaths,
   generateLogoPath,
-  generatePicturePath
+  generatePicturePath,
+  modifyMultipleOrganizationPaths
  } from "../services/organizationsService";
 import { IOrganizationUpdateDto, IOrganizationDto } from "../types/organization";
 import { updateFile, removeSingleFile } from "../helpers/updateAndDeleteImage";
@@ -130,7 +131,7 @@ export async function verifyOrganizationByAdmin(req: Request, res: Response) {
       return res.status(404).json(errorMessageObj("Organization not found"));
     //send email to organiser
     sendOrganisationVerifiedEmail(updatedOrganization);
-    res.status(200).json(await addFollowerCount(updatedOrganization));
+    res.status(200).json(await modifyOrganizationPaths(await addFollowerCount(updatedOrganization)));
   } catch (error) {
     res.status(500).json(errorMessageObj("An error occurred while verifying the organization"));
   }
@@ -145,7 +146,7 @@ export async function addFollowerOrganization(req: Request, res: Response) {
     if (isCreator) res.status(500).json(errorMessageObj("You cannot follow your own organization"));
 
     const updatedOrganization = await addFollower(organization, userId);
-    res.status(200).json(await addFollowerCount(updatedOrganization));
+    res.status(200).json(await modifyOrganizationPaths(await addFollowerCount(updatedOrganization)));
   } catch (error: unknown) {
     if (error instanceof Error)
       res.status(500).json(errorMessageObj(error.message));
@@ -182,7 +183,7 @@ export async function getOrganizationById(req: Request, res: Response) {
     if (!organization)
       return res.status(404).json(errorMessageObj("Organization not found or not verified"));
     
-    res.status(200).json(await addFollowerCount(organization));
+    res.status(200).json(await modifyOrganizationPaths(await addFollowerCount(organization)));
   } catch (error) {
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));
@@ -219,7 +220,7 @@ export async function getMyOrganizations(req: Request, res: Response) {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const organizations = await getOrganizations({ createdBy: userId }, page, limit);
-    res.status(200).json(await modifyOrganizationPaths(organizations));
+    res.status(200).json(await modifyMultipleOrganizationPaths(organizations));
   } catch (error) {
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));

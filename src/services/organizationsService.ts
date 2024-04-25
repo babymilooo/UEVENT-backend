@@ -113,6 +113,14 @@ export async function modifyOrganizationPaths(organization: any) {
   return updatedOrganization;
 }
 
+export async function modifyMultipleOrganizationPaths(organizations: any[]) {
+  const updatedOrganizations = await Promise.all(organizations.map(async organization => {
+    return modifyOrganizationPaths(organization);
+  }));
+
+  return updatedOrganizations;
+}
+
 
 
 
