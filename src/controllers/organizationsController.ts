@@ -14,7 +14,10 @@ import {
   addFollowerCount,
   validateContactDetails,
   findOrganizationByName,
-  getOrganizationsByName
+  getOrganizationsByName,
+  modifyOrganizationPaths,
+  generateLogoPath,
+  generatePicturePath
  } from "../services/organizationsService";
 import { IOrganizationUpdateDto, IOrganizationDto } from "../types/organization";
 import { updateFile, removeSingleFile } from "../helpers/updateAndDeleteImage";
@@ -60,7 +63,7 @@ export async function updateOrganization(req: Request, res: Response) {
     }
   
     const updatedOrganization = await updateOrganizationByIdAndUserId(orgId, userId, updateData);
-    res.status(200).json(await addFollowerCount(updatedOrganization));
+    res.status(200).json(await modifyOrganizationPaths(await addFollowerCount(updatedOrganization)));
   } catch (error: any) {
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));
@@ -80,7 +83,8 @@ export async function updateOrganizationLogo(req: Request, res: Response) {
     await updateFile(currentOrg, "logo", file);
     await currentOrg.save();
 
-    res.status(200).json(currentOrg.logo);
+    const logoPath = currentOrg.logo ? await generateLogoPath(currentOrg.logo) : null;
+    res.status(200).json({ logo: logoPath });
   } catch (error: any) {
     if (req.file)
       await removeSingleFile(req.file);
@@ -102,7 +106,8 @@ export async function updateOrganizationPicture(req: Request, res: Response) {
     await updateFile(currentOrg, "picture", file);
     await currentOrg.save();
 
-    res.status(200).json(currentOrg.picture);
+    const picturePath = currentOrg.picture ? await generatePicturePath(currentOrg.picture) : null;
+    res.status(200).json({ logo: picturePath });
   } catch (error: any) {
     if (req.file)
       await removeSingleFile(req.file);

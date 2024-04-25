@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { IOrganization, Organization } from "../models/organizations";
 import { Event } from "../models/events";
 import { IOrganizationDto, IOrganizationUpdateDto }  from "../types/organization";
@@ -87,6 +88,32 @@ export async function addFollowerCount(organization: any) {
     followerCount: organization.followers.length
   }
 }
+
+export async function generateLogoPath(logoFileName: string) {
+  const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+  const logoBasePath = backendUrl + (process.env.LOGO_PATH || '/static/organizations/logo/');
+  return logoFileName ? logoBasePath + logoFileName : logoFileName;
+}
+
+export async function generatePicturePath(pictureFileName: string) {
+  const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+  const imageBasePath = backendUrl + (process.env.PICTURE_PATH || '/static/organizations/picture/');
+  return pictureFileName ? imageBasePath + pictureFileName : pictureFileName;
+}
+
+
+export async function modifyOrganizationPaths(organization: any) {
+
+  const updatedOrganization = {
+    ...organization,
+    logo: organization.logo ? await generateLogoPath(organization.logo) : organization.logo,
+    picture: organization.picture ? await generateLogoPath(organization.picture) : organization.picture
+  };
+
+  return updatedOrganization;
+}
+
+
 
 
 export async function addFollower(organization: any, userId: string) {
