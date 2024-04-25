@@ -79,7 +79,7 @@ const organizationSchema = new Schema<IShemaOrganization>({
     default: "",
     required: true 
   }
-});
+}, { timestamps: true });
 
 export const Organization = model<IShemaOrganization>("Organization", organizationSchema);
 

@@ -9,7 +9,7 @@ import {
   getEventsByOrganization,
   getMyOrganizations,
   getOrganizationsIFollow,
-  searchOrganizations, 
+  searchOrganizationsByNameAndUser, 
   updateOrganizationLogo, 
   updateOrganizationPicture
  } from "../controllers/organizationsController";
@@ -31,7 +31,7 @@ organizationRouter.post("/follow-organization/:orgId", authGuard, refreshTokenMi
 organizationRouter.get("/get-organization/:orgId", getOrganizationById);
 organizationRouter.get("/get-my-organizations", authGuard, refreshTokenMiddleware, getMyOrganizations);
 organizationRouter.get("/get-my-organizations-followed", authGuard, refreshTokenMiddleware, getOrganizationsIFollow);
-organizationRouter.get("/search", searchOrganizations);
+organizationRouter.get("/search-my-organizations", authGuard, refreshTokenMiddleware, searchOrganizationsByNameAndUser);
 organizationRouter.get("/get-events/:orgId", getEventsByOrganization);
 organizationRouter.delete("/delete-organization/:orgId", authGuard, refreshTokenMiddleware, deleteOrganizationAndEvents);
 

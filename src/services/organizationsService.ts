@@ -159,15 +159,43 @@ export async function getOrganizations(query: Record<string, any>, page: number,
   return organizationsWithFollowerCount;
 }
 
-export async function getOrganizationsByName(name: string, page: number, limit: number) {
-  const regex = new RegExp(name, 'i'); 
-  const skip = (page - 1) * limit;
-  const organizations = await Organization.find({ name: regex }).skip(skip).limit(limit);
+
+export async function getOrganizationsByNameAndUserId(name: string, userId: string, minFollowerCount: number | undefined, createdBefore: Date | undefined, createdAfter: Date | undefined, sortOrder: string, page: number, limit: number) {
+  const query: any = { createdBy: userId };
+  if (name) query.name = { $regex: new RegExp(name, 'i') };
+  if (minFollowerCount !== undefined) query.$expr = { $gte: [{ $size: "$followers" }, minFollowerCount] };
+  if (createdAfter !== undefined || createdBefore !== undefined) {
+    query.createdAt = {};
+    if (createdAfter !== undefined)
+      query.createdAt.$gte = new Date(createdAfter);
+    if (createdBefore !== undefined)
+      query.createdAt.$lt = new Date(createdBefore);
+  }
+  const sortOption = sortOrder === "newest" ? '-createdAt' : 'createdAt';
+  console.log(query);
+  const organizations = await Organization.find(query)
+    .sort(sortOption)
+    .skip((page - 1) * limit)
+    .limit(limit);
+
   const organizationsWithFollowerCount = await Promise.all(
     organizations.map(addFollowerCount)
-  ); 
+  );
+  console.log(organizationsWithFollowerCount);
+
   return organizationsWithFollowerCount;
 }
+
+// export async function getOrganizationsByName(name: string, page: number, limit: number) {
+//   const regex = new RegExp(name, 'i'); 
+//   const skip = (page - 1) * limit;
+//   const organizations = await Organization.find({ name: regex }).skip(skip).limit(limit);
+//   const organizationsWithFollowerCount = await Promise.all(
+//     organizations.map(addFollowerCount)
+//   ); 
+//   return organizationsWithFollowerCount;
+// }
+
 
 // export async function getOrganizationsByCreate(userId: string) {
 //   const organizations = await Organization.find({ createdBy: userId });

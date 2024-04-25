@@ -14,11 +14,11 @@ import {
   addFollowerCount,
   validateContactDetails,
   findOrganizationByName,
-  getOrganizationsByName,
   modifyOrganizationPaths,
   generateLogoPath,
   generatePicturePath,
-  modifyMultipleOrganizationPaths
+  modifyMultipleOrganizationPaths,
+  getOrganizationsByNameAndUserId
  } from "../services/organizationsService";
 import { IOrganizationUpdateDto, IOrganizationDto } from "../types/organization";
 import { updateFile, removeSingleFile } from "../helpers/updateAndDeleteImage";
@@ -245,21 +245,26 @@ export async function getOrganizationsIFollow(req: Request, res: Response) {
 }
 
 
-export async function searchOrganizations(req: Request, res: Response) {
+export async function searchOrganizationsByNameAndUser(req: Request, res: Response) {
   try {
-    const name = req.query.name as string;  
+    const userId = (req as any).userId as string;
+    const name = req.query.name as string;
+    const minFollowerCount = req.query.minFollowerCount ? parseInt(req.query.minFollowerCount as string) : undefined;
+    const createdBefore = req.query.createdBefore ? new Date(req.query.createdBefore as string) : undefined;
+    const createdAfter = req.query.createdAfter ? new Date(req.query.createdAfter as string) : undefined;
+    const sortOrder = req.query.sortOrder as string || "newest"; // Default to "newest"
     const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10; 
+    const limit = parseInt(req.query.limit as string) || 10;
 
-    if (!name) 
-      return res.status(400).json({ message: "Name parameter is required for search." });
+    if (!userId) 
+      return res.status(400).json({ message: "User ID is required for search." });
 
-    const organizations = await getOrganizationsByName(name, page, limit);
+    const organizations = await getOrganizationsByNameAndUserId(name, userId, minFollowerCount, createdBefore, createdAfter, sortOrder, page, limit);
     res.status(200).json(organizations);
   } catch (error) {
     if (error instanceof Error) 
-      res.status(500).json(errorMessageObj(error.message));
+      res.status(500).json({ message: error.message });
     else
-      res.status(500).json(errorMessageObj("Error loading organization data"));
+      res.status(500).json({ message: "Error loading organization data" });
   }
 }
