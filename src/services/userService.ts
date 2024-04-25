@@ -45,6 +45,12 @@ export async function createUser(userDto: IUserDto) {
   }
 }
 
+export async function generateAvatarPath(avatarFileName: string) {
+  const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+  const avatarBasePath = backendUrl + (process.env.AVATAR_PATH || '/static/avatars/');
+  return avatarFileName ? avatarBasePath + avatarFileName : avatarFileName;
+}
+
 export async function findUserById(id: string | Types.ObjectId) {
   const user = await User.findById(id).exec();
   if (!user) 

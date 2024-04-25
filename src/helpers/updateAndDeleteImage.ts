@@ -45,13 +45,13 @@ export async function updateFile(updateData: any, fieldname: string, file: Expre
     const normalizedNewFilePath = file.path.replace(/\\/g, '/');
     const filenameOnly = normalizedNewFilePath.split('/').pop();
 
-    const basePath = fieldname === 'profilePicture'
+    const basePath = fieldname === "profilePicture"
       ? path.join('static', 'avatars')
       : path.join('static', 'organizations', fieldname);
 
     const currentFilename = updateData[fieldname];
     if (currentFilename) {
-      const oldFilePath = path.join(basePath, currentFilename);
+      const oldFilePath = path.posix.join(basePath, currentFilename);
       await removeSingleFile(oldFilePath);
     }
     updateData[fieldname] = filenameOnly;

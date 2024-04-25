@@ -85,8 +85,6 @@ export async function updateOrganizationLogo(req: Request, res: Response) {
     await updateFile(currentOrg, "logo", file);
     await currentOrg.save();
 
-    console.log(currentOrg);
-
     const logoPath = currentOrg.logo ? await generateLogoPath(currentOrg.logo) : null;
     res.status(200).json({ logo: logoPath });
   } catch (error: any) {

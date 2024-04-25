@@ -5,21 +5,17 @@ import {
   removeSensitiveData,
   findUserById,
   getPublicUserInfo,
+  generateAvatarPath
 } from "../services/userService";
 import { errorMessageObj } from "../helpers/errorMessageObj";
-import { handleImageUpdate, removeFiles } from "../helpers/updateAndDeleteImage";
+import { updateFile, removeSingleFile } from "../helpers/updateAndDeleteImage";
 
-export async function updateProfile(
-  req: Request & { file?: Express.Multer.File },
-  res: Response
-) {
+export async function updateProfile(req: Request, res: Response) {
   try {
     const userId = (req as any).userId as string;
-
     const currentUser = await findUserById(userId);
     if (currentUser && currentUser.isRegisteredViaSpotify)
-      return res
-        .status(403)
+      return res.status(403)
         .json(
           errorMessageObj(
             "Profile editing is not allowed for users registered via Spotify."
@@ -32,15 +28,45 @@ export async function updateProfile(
       updateData.passwordHash = passwordHash;
       delete updateData.password;
     }
-    const file: Express.Multer.File = req.files as any;
-    await handleImageUpdate(updateData, "profilePicture",  file);
 
     const updateInfoUser = await updateUser(userId, updateData);
     res.status(200).json(await removeSensitiveData(updateInfoUser));
   } catch (error) {
-    if (req.files)
-      await removeFiles(req.files);
-    res.status(500).json(errorMessageObj("Failed to update profile"));
+    if (error instanceof Error) 
+      res.status(500).json(errorMessageObj(error.message));
+    else
+      res.status(500).json(errorMessageObj("Failed to update profile"));
+  }
+}
+
+export async function updateAvatar(req: Request, res: Response) {
+  try {
+    const userId = (req as any).userId as string;
+    const file: Express.Multer.File = req.file as any;
+  
+    if (!file)
+      return res.status(400).json(errorMessageObj("No image uploaded."));
+    
+    const currentUser = await findUserById(userId);
+    if (currentUser && currentUser.isRegisteredViaSpotify)
+      return res.status(403).json(
+        errorMessageObj(
+          "Profile editing is not allowed for users registered via Spotify."
+        )
+      );
+
+    await updateFile(currentUser, "profilePicture", file);
+    await currentUser.save();
+
+    const avatarPath = currentUser.profilePicture ? await generateAvatarPath(currentUser.profilePicture) : null;
+    res.status(200).json({ profilePicture: avatarPath });
+  } catch (error: any) {
+    if (req.file)
+      await removeSingleFile(req.file);
+    if (error instanceof Error) 
+      res.status(500).json(errorMessageObj(error.message));
+    else
+      res.status(500).json(errorMessageObj("An error occurred while updating the image."));
   }
 }
 
