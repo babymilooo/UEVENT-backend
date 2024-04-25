@@ -216,7 +216,7 @@ export async function getMyOrganizations(req: Request, res: Response) {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const organizations = await getOrganizations({ createdBy: userId }, page, limit);
-    res.status(200).json(organizations);
+    res.status(200).json(await modifyOrganizationPaths(organizations));
   } catch (error) {
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));
@@ -231,7 +231,7 @@ export async function getOrganizationsIFollow(req: Request, res: Response) {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const organizations = await getOrganizations({ followers: userId }, page, limit);
-    res.status(200).json(organizations);
+    res.status(200).json(await modifyOrganizationPaths(organizations));
   } catch (error) {
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));
