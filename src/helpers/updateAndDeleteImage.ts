@@ -43,32 +43,28 @@ export async function handleImageUpdate(updateData: any, nameFile: string, files
 export async function updateFile(updateData: any, fieldname: string, file: Express.Multer.File) {
   if (file && file.path) {
     const normalizedNewFilePath = file.path.replace(/\\/g, '/');
-    // const currentImagePath = updateData[fieldname];
-    
-    // if (currentImagePath) {
-    //   const normalizedCurrentImagePath = currentImagePath.replace(/\\/g, '/');
-      
-    //   const oldImagePath = path.posix.join('static', normalizedCurrentImagePath.replace(`static/`, ''));
-    //   try {
-    //     if (fs.existsSync(oldImagePath)) 
-    //       await fs.promises.unlink(oldImagePath);
-    //   } catch (error) {
-    //     console.error(`Error deleting old image at ${oldImagePath}:`, error);
-    //   }
-    // }
-    //const relativeFilePath = normalizedNewFilePath.split('static')[1];
     const filenameOnly = normalizedNewFilePath.split('/').pop();
-    console.log(filenameOnly);
+
+    const basePath = fieldname === 'profilePicture'
+      ? path.join('static', 'avatars')
+      : path.join('static', 'organizations', fieldname);
+
+    const currentFilename = updateData[fieldname];
+    if (currentFilename) {
+      const oldFilePath = path.join(basePath, currentFilename);
+      await removeSingleFile(oldFilePath);
+    }
     updateData[fieldname] = filenameOnly;
   }
 }
 
-export async function removeSingleFile(file: Express.Multer.File) {
+export async function removeSingleFile(file: Express.Multer.File | string) {
+  const filePath = typeof file === 'string' ? file : file.path;
   try {
-    await fs.promises.unlink(file.path);
-    console.log(`Successfully removed file: ${file.path}`);
+    await fs.promises.unlink(filePath);
+    console.log(`Successfully removed file: ${filePath}`);
   } catch (error) {
-    console.error(`Error removing file: ${file.path}`, error);
+    console.error(`Error removing file: ${filePath}`, error);
   }
 }
 

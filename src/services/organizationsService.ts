@@ -172,7 +172,6 @@ export async function getOrganizationsByNameAndUserId(name: string, userId: stri
       query.createdAt.$lt = new Date(createdBefore);
   }
   const sortOption = sortOrder === "newest" ? '-createdAt' : 'createdAt';
-  console.log(query);
   const organizations = await Organization.find(query)
     .sort(sortOption)
     .skip((page - 1) * limit)
@@ -181,7 +180,6 @@ export async function getOrganizationsByNameAndUserId(name: string, userId: stri
   const organizationsWithFollowerCount = await Promise.all(
     organizations.map(addFollowerCount)
   );
-  console.log(organizationsWithFollowerCount);
 
   return organizationsWithFollowerCount;
 }
