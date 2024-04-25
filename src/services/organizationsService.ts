@@ -107,7 +107,7 @@ export async function modifyOrganizationPaths(organization: any) {
   const updatedOrganization = {
     ...organization,
     logo: organization.logo ? await generateLogoPath(organization.logo) : organization.logo,
-    picture: organization.picture ? await generateLogoPath(organization.picture) : organization.picture
+    picture: organization.picture ? await generatePicturePath(organization.picture) : organization.picture
   };
 
   return updatedOrganization;
