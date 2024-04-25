@@ -42,20 +42,23 @@ export async function handleImageUpdate(updateData: any, nameFile: string, files
 
 export async function updateFile(updateData: any, fieldname: string, file: Express.Multer.File) {
   if (file && file.path) {
+    const normalizedNewFilePath = file.path.replace(/\\/g, '/');
     const currentImagePath = updateData[fieldname];
     
     if (currentImagePath) {
-      const oldImagePath = path.posix.join('static', currentImagePath.replace(`${process.env.BACKEND_URL}/static/`, ''));
+      const normalizedCurrentImagePath = currentImagePath.replace(/\\/g, '/');
+      
+      const oldImagePath = path.posix.join('static', normalizedCurrentImagePath.replace(`static/`, ''));
       try {
         if (fs.existsSync(oldImagePath)) 
-          fs.promises.unlink(oldImagePath);
+          await fs.promises.unlink(oldImagePath);
       } catch (error) {
         console.error(`Error deleting old image at ${oldImagePath}:`, error);
       }
     }
     
-    const relativeFilePath = file.path.split('static')[1];
-    updateData[fieldname] = `${process.env.BACKEND_URL}/static${relativeFilePath}`;
+    const relativeFilePath = normalizedNewFilePath.split('static')[1];
+    updateData[fieldname] = `static${relativeFilePath}`;
   }
 }
 
