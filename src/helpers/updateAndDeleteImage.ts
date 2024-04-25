@@ -58,6 +58,7 @@ export async function updateFile(updateData: any, fieldname: string, file: Expre
     // }
     //const relativeFilePath = normalizedNewFilePath.split('static')[1];
     const filenameOnly = normalizedNewFilePath.split('/').pop();
+    console.log(filenameOnly);
     updateData[fieldname] = filenameOnly;
   }
 }

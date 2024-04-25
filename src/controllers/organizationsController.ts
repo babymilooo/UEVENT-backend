@@ -76,12 +76,15 @@ export async function updateOrganizationLogo(req: Request, res: Response) {
   try {
     const orgId = req.params.orgId; 
     const file: Express.Multer.File = req.file as any;
+    console.log(file);
     if (!file)
       return res.status(400).json(errorMessageObj("No image uploaded."));
     
     const currentOrg = await findOrganizationById(orgId);
     await updateFile(currentOrg, "logo", file);
     await currentOrg.save();
+
+    console.log(currentOrg);
 
     const logoPath = currentOrg.logo ? await generateLogoPath(currentOrg.logo) : null;
     res.status(200).json({ logo: logoPath });
@@ -98,8 +101,8 @@ export async function updateOrganizationLogo(req: Request, res: Response) {
 export async function updateOrganizationPicture(req: Request, res: Response) {
   try {
     const orgId = req.params.orgId; 
-    const file: Express.Multer.File = req.files as any;
-    if (file)
+    const file: Express.Multer.File = req.file as any;
+    if (!file)
       return res.status(400).json(errorMessageObj("No image uploaded."));
     
     const currentOrg = await findOrganizationById(orgId);
@@ -107,7 +110,7 @@ export async function updateOrganizationPicture(req: Request, res: Response) {
     await currentOrg.save();
 
     const picturePath = currentOrg.picture ? await generatePicturePath(currentOrg.picture) : null;
-    res.status(200).json({ logo: picturePath });
+    res.status(200).json({ picture: picturePath });
   } catch (error: any) {
     if (req.file)
       await removeSingleFile(req.file);
