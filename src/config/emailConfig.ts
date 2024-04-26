@@ -60,12 +60,12 @@ export function requestOrganisationVerificationEmail(
     <br/>
     <a href="${
       FRONTEND_URL +
-      "/organisation/verify-organisation/" +
-      encodeURIComponent(org._id)
+      "/organizations/" +
+      encodeURIComponent(org._id) + "/verify-organization"
     }">${
-    FRONTEND_URL +
-    "/organisation/verify-organisation/" +
-    encodeURIComponent(org._id)
+      FRONTEND_URL +
+      "/organizations/" +
+      encodeURIComponent(org._id) + "/verify-organization"
   }</a>
     <br/>
     Upon verification the organisation owner will receive a notification about it.
@@ -153,5 +153,6 @@ export async function htmlToTicket(
     format: "A4",
   });
   const absPath = path.resolve("./ticketPDFs/" + filename);
+  page.close();
   callback(absPath);
 }
