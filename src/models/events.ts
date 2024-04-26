@@ -17,6 +17,9 @@ export interface ISchemaEvent {
     latitude: string;
     longitude: string;
   };
+  picture?: string;
+  logo?: string;
+  artists?: string[]
 }
 
 const eventSchema = new Schema<ISchemaEvent>({
@@ -47,12 +50,10 @@ const eventSchema = new Schema<ISchemaEvent>({
     type: String,
     default: "",
   },
-  attendees: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
-  ],
+  attendees: [{
+    type: Schema.Types.ObjectId,
+    ref: "User",
+  }],
   ticketOptions: [{
     type: Schema.Types.ObjectId,
     ref: "TicketOption"
@@ -78,7 +79,19 @@ const eventSchema = new Schema<ISchemaEvent>({
       default: ""
     }
   },
-});
+  picture : { 
+    type: String, 
+    default: ""
+  },
+  logo: {
+    type: String,
+    default: ""
+  },
+  artists : [{
+    type: String,
+    default: ""
+  }]
+}, { timestamps: true });
 
 eventSchema.virtual("isOver").get(function () {
   return this.date >= new Date();

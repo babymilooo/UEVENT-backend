@@ -23,12 +23,23 @@ function createMulterConfig(dirName: string) {
 }
 
 const uploadAvatars = createMulterConfig("avatars");
-const uploadOrganizationLogo = createMulterConfig("organizations/logo");
-const uploadOrganizationPicture = createMulterConfig("organizations/picture");
+const uploadOrganizationLogo = createMulterConfig("organization/logo");
+const uploadOrganizationPicture = createMulterConfig("organization/picture");
+const uploadEventLogo = createMulterConfig("event/logo");
+const uploadEventPicture = createMulterConfig("event/picture");
 
-// const uploadMultiple = uploadOrganizationImages.fields([
-//   { name: 'logo', maxCount: 1 },
-//   { name: 'picture', maxCount: 1 }
-// ]);
-
-export { uploadAvatars, uploadOrganizationLogo, uploadOrganizationPicture };
+const multerConfigs = {
+  organization: {
+    logo: uploadOrganizationLogo,
+    picture: uploadOrganizationPicture
+  },
+  event: {
+    logo: uploadEventLogo,
+    picture: uploadEventPicture
+  }
+};
+export { uploadAvatars, 
+         uploadOrganizationLogo, uploadOrganizationPicture, 
+         uploadEventLogo, uploadEventPicture, 
+         multerConfigs 
+        };

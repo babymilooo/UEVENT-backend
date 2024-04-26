@@ -47,7 +47,7 @@ export async function createUser(userDto: IUserDto) {
 
 export async function generateAvatarPath(avatarFileName: string) {
   const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
-  const avatarBasePath = backendUrl + (process.env.AVATAR_PATH || '/static/avatars/');
+  const avatarBasePath = backendUrl +  '/static/avatars/';
   return avatarFileName ? avatarBasePath + avatarFileName : avatarFileName;
 }
 
@@ -165,33 +165,3 @@ export async function getRefreshTokenForUser(userId: string) {
   return refreshToken; 
 }
 
-
-
-
-
-// export async function findOrCreateUser(spotifyApi: any, me: any, refreshToken: string) {
-//   let user = await findUserByEmail(me.email);
-//   const profilePictureUrl = me.images.length > 0 ? me.images[0].url : "";
-//   if (!user) {
-//     user = await createUser({ 
-//       userName: me.disply_name, email: me.emal,
-//       password: refreshToken,
-//       spotifyRefreshToken: refreshToken, 
-//       isRegisteredViaSpotify: true,
-//       profilePicture: profilePictureUrl });
-//   } else {
-//     let userRefreshToken = user.spotifyRefreshToken;
-//     if(userRefreshToken !== refreshToken) {
-//       userRefreshToken = refreshToken;
-//       user.spotifyRefreshToken = userRefreshToken;
-//       await user.save();
-//     }
-//     if (user.profilePicture !== profilePictureUrl) {
-//       user.profilePicture = profilePictureUrl;
-//       await user.save();
-//     }
-//     if (userRefreshToken)
-//       await refreshSpotifyAccessToken(spotifyApi, userRefreshToken);
-//   }
-//   return user
-// } 

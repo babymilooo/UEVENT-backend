@@ -55,7 +55,7 @@ export async function updateAvatar(req: Request, res: Response) {
         )
       );
 
-    await updateFile(currentUser, "profilePicture", file);
+    await updateFile(currentUser, "profile", "profilePicture", file);
     await currentUser.save();
 
     const avatarPath = currentUser.profilePicture ? await generateAvatarPath(currentUser.profilePicture) : null;

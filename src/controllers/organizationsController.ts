@@ -1,3 +1,4 @@
+import "dotenv/config";
 import e, { Request, Response } from "express";
 import { errorMessageObj } from "../helpers/errorMessageObj";
 import { 
@@ -14,16 +15,14 @@ import {
   addFollowerCount,
   validateContactDetails,
   findOrganizationByName,
-  modifyOrganizationPaths,
-  generateLogoPath,
-  generatePicturePath,
-  modifyMultipleOrganizationPaths,
   getOrganizationsByNameAndUserId
  } from "../services/organizationsService";
 import { IOrganizationUpdateDto, IOrganizationDto } from "../types/organization";
-import { updateFile, removeSingleFile } from "../helpers/updateAndDeleteImage";
+import { modifyMultipleEntityPaths, modifyEntityPaths } from "../helpers/updateAndDeleteImage";
 import { sendOrganisationVerifiedEmail, sendRequestOrgVerificationEmail } from "../services/emailService";
 
+const ORG_URL = process.env.ORG_URL || "/static/organization/";
+const EVENT_URL = process.env.EVENT_URL || "/static/event/";
 
 export async function createOrganization(req: Request, res: Response) {
   try {
@@ -38,7 +37,7 @@ export async function createOrganization(req: Request, res: Response) {
     //asyncronously send emails to admins
     await sendRequestOrgVerificationEmail(newOrganization);
 
-    res.status(200).json(await addFollowerCount(newOrganization));
+    res.status(201).json(await addFollowerCount(newOrganization));
   } catch (error: any) {
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));
@@ -64,7 +63,7 @@ export async function updateOrganization(req: Request, res: Response) {
     }
   
     const updatedOrganization = await updateOrganizationByIdAndUserId(orgId, userId, updateData);
-    res.status(200).json(await modifyOrganizationPaths(await addFollowerCount(updatedOrganization)));
+    res.status(200).json(await modifyMultipleEntityPaths(await addFollowerCount(updatedOrganization), ORG_URL));
   } catch (error: any) {
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));
@@ -73,52 +72,6 @@ export async function updateOrganization(req: Request, res: Response) {
   }
 }
 
-export async function updateOrganizationLogo(req: Request, res: Response) {
-  try {
-    const orgId = req.params.orgId; 
-    const file: Express.Multer.File = req.file as any;
-    console.log(file);
-    if (!file)
-      return res.status(400).json(errorMessageObj("No image uploaded."));
-    
-    const currentOrg = await findOrganizationById(orgId);
-    await updateFile(currentOrg, "logo", file);
-    await currentOrg.save();
-
-    const logoPath = currentOrg.logo ? await generateLogoPath(currentOrg.logo) : null;
-    res.status(200).json({ logo: logoPath });
-  } catch (error: any) {
-    if (req.file)
-      await removeSingleFile(req.file);
-    if (error instanceof Error) 
-      res.status(500).json(errorMessageObj(error.message));
-    else
-      res.status(500).json(errorMessageObj("An error occurred while updating the image."));
-  }
-}
-
-export async function updateOrganizationPicture(req: Request, res: Response) {
-  try {
-    const orgId = req.params.orgId; 
-    const file: Express.Multer.File = req.file as any;
-    if (!file)
-      return res.status(400).json(errorMessageObj("No image uploaded."));
-    
-    const currentOrg = await findOrganizationById(orgId);
-    await updateFile(currentOrg, "picture", file);
-    await currentOrg.save();
-
-    const picturePath = currentOrg.picture ? await generatePicturePath(currentOrg.picture) : null;
-    res.status(200).json({ picture: picturePath });
-  } catch (error: any) {
-    if (req.file)
-      await removeSingleFile(req.file);
-    if (error instanceof Error) 
-      res.status(500).json(errorMessageObj(error.message));
-    else
-      res.status(500).json(errorMessageObj("An error occurred while updating the image."));
-  }
-}
 
 
 export async function verifyOrganizationByAdmin(req: Request, res: Response) {
@@ -129,7 +82,7 @@ export async function verifyOrganizationByAdmin(req: Request, res: Response) {
       return res.status(404).json(errorMessageObj("Organization not found"));
     //send email to organiser
     sendOrganisationVerifiedEmail(updatedOrganization);
-    res.status(200).json(await modifyOrganizationPaths(await addFollowerCount(updatedOrganization)));
+    res.status(200).json(await modifyEntityPaths(await addFollowerCount(updatedOrganization), ORG_URL));
   } catch (error) {
     res.status(500).json(errorMessageObj("An error occurred while verifying the organization"));
   }
@@ -144,7 +97,7 @@ export async function addFollowerOrganization(req: Request, res: Response) {
     if (isCreator) res.status(500).json(errorMessageObj("You cannot follow your own organization"));
 
     const updatedOrganization = await addFollower(organization, userId);
-    res.status(200).json(await modifyOrganizationPaths(await addFollowerCount(updatedOrganization)));
+    res.status(200).json(await modifyEntityPaths(await addFollowerCount(updatedOrganization), ORG_URL));
   } catch (error: unknown) {
     if (error instanceof Error)
       res.status(500).json(errorMessageObj(error.message));
@@ -181,7 +134,7 @@ export async function getOrganizationById(req: Request, res: Response) {
     if (!organization)
       return res.status(404).json(errorMessageObj("Organization not found or not verified"));
     
-    res.status(200).json(await modifyOrganizationPaths(await addFollowerCount(organization)));
+    res.status(200).json(await modifyEntityPaths(await addFollowerCount(organization), ORG_URL));
   } catch (error) {
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));
@@ -202,8 +155,7 @@ export async function getEventsByOrganization(req:  Request, res: Response) {
       await e.populate('ticketOptions');
     }
     
-
-    res.status(200).json(events);
+    res.status(200).json(await modifyMultipleEntityPaths(events, EVENT_URL));
   } catch (error) {
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));
@@ -218,7 +170,7 @@ export async function getMyOrganizations(req: Request, res: Response) {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const organizations = await getOrganizations({ createdBy: userId }, page, limit);
-    res.status(200).json(await modifyMultipleOrganizationPaths(organizations));
+    res.status(200).json(await modifyMultipleEntityPaths(organizations, ORG_URL));
   } catch (error) {
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));
@@ -233,7 +185,7 @@ export async function getOrganizationsIFollow(req: Request, res: Response) {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const organizations = await getOrganizations({ followers: userId }, page, limit);
-    res.status(200).json(await modifyOrganizationPaths(organizations));
+    res.status(200).json(await modifyMultipleEntityPaths(organizations, ORG_URL));
   } catch (error) {
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));
@@ -258,7 +210,7 @@ export async function searchOrganizationsByNameAndUser(req: Request, res: Respon
       return res.status(400).json({ message: "User ID is required for search." });
 
     const organizations = await getOrganizationsByNameAndUserId(name, userId, minFollowerCount, createdBefore, createdAfter, sortOrder, page, limit);
-    res.status(200).json(organizations);
+    res.status(200).json(modifyMultipleEntityPaths(organizations, ORG_URL));
   } catch (error) {
     if (error instanceof Error) 
       res.status(500).json({ message: error.message });

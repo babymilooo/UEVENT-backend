@@ -11,6 +11,7 @@ import { stripeRouter } from "./routers/stripeRouter";
 import { eventsRouter } from "./routers/eventsRouter";
 import { ticketRouter } from "./routers/ticketRouter";
 import { ticketOptionsRouter } from "./routers/ticketOptionsRouter";
+import { mediaRouter } from "./routers/mediaRouter";
 
 const app = express();
 import bodyParser = require("body-parser");
@@ -31,7 +32,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use('/static/avatars', express.static('static/avatars'));
-app.use('/static/organizations', express.static('static/organizations'));
+app.use('/static/organization', express.static('static/organization'));
+app.use('/static/event', express.static('static/event'));
 
 app.use('/auth', authRouter);
 app.use('/artists', artistRouter);
@@ -41,5 +43,6 @@ app.use('/stripe', stripeRouter);
 app.use('/events', eventsRouter);
 app.use('/tickets', ticketRouter);
 app.use('/ticketOptions', ticketOptionsRouter);
+app.use('/download', mediaRouter);
 
 export default app;

@@ -89,48 +89,13 @@ export async function addFollowerCount(organization: any) {
   }
 }
 
-export async function generateLogoPath(logoFileName: string) {
-  const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
-  const logoBasePath = backendUrl + (process.env.LOGO_PATH || '/static/organizations/logo/');
-  return logoFileName ? logoBasePath + logoFileName : logoFileName;
-}
-
-export async function generatePicturePath(pictureFileName: string) {
-  const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
-  const imageBasePath = backendUrl + (process.env.PICTURE_PATH || '/static/organizations/picture/');
-  return pictureFileName ? imageBasePath + pictureFileName : pictureFileName;
-}
-
-
-export async function modifyOrganizationPaths(organization: any) {
-
-  const updatedOrganization = {
-    ...organization,
-    logo: organization.logo ? await generateLogoPath(organization.logo) : organization.logo,
-    picture: organization.picture ? await generatePicturePath(organization.picture) : organization.picture
-  };
-
-  return updatedOrganization;
-}
-
-export async function modifyMultipleOrganizationPaths(organizations: any[]) {
-  const updatedOrganizations = await Promise.all(organizations.map(async organization => {
-    return modifyOrganizationPaths(organization);
-  }));
-
-  return updatedOrganizations;
-}
-
-
-
-
 export async function addFollower(organization: any, userId: string) {
   if (organization.followers.some((id: any) => id.toString() === userId)) 
     organization.followers = organization.followers.filter((id: any) => id.toString() !== userId);
   else
     organization.followers.push(new mongoose.Types.ObjectId(userId));
   
-    await organization.save();
+  await organization.save();
   return organization;
 }
 
@@ -183,30 +148,3 @@ export async function getOrganizationsByNameAndUserId(name: string, userId: stri
 
   return organizationsWithFollowerCount;
 }
-
-// export async function getOrganizationsByName(name: string, page: number, limit: number) {
-//   const regex = new RegExp(name, 'i'); 
-//   const skip = (page - 1) * limit;
-//   const organizations = await Organization.find({ name: regex }).skip(skip).limit(limit);
-//   const organizationsWithFollowerCount = await Promise.all(
-//     organizations.map(addFollowerCount)
-//   ); 
-//   return organizationsWithFollowerCount;
-// }
-
-
-// export async function getOrganizationsByCreate(userId: string) {
-//   const organizations = await Organization.find({ createdBy: userId });
-//   const organizationsWithFollowerCount = await Promise.all(
-//     organizations.map(addFollowerCount)
-//   );
-//   return organizationsWithFollowerCount;
-// }
-
-// export async function getOrganizationIfUserInFollowers(userId: string) {
-//   const organizations = await Organization.find({ followers: userId });
-//   const organizationsWithFollowerCount = await Promise.all(
-//     organizations.map(org => addFollowerCount(org))
-//   );
-//   return organizationsWithFollowerCount;
-// }

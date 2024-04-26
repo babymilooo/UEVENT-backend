@@ -15,7 +15,4 @@ userRouter.patch("/edit-profile-avatar", authGuard, refreshTokenMiddleware, uplo
 userRouter.get("/user-info", authGuard, refreshTokenMiddleware, getUserInfo);
 userRouter.get('/user-info/:userId', getUserInfoById);
 
-//userRouter.patch("/edit-profile", authGuard, refreshTokenMiddleware, upload.single("avatar"), updateProfile);
-
-
 export { userRouter};

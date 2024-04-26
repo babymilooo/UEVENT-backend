@@ -9,22 +9,20 @@ import {
   getEventsByOrganization,
   getMyOrganizations,
   getOrganizationsIFollow,
-  searchOrganizationsByNameAndUser, 
-  updateOrganizationLogo, 
-  updateOrganizationPicture
+  searchOrganizationsByNameAndUser
  } from "../controllers/organizationsController";
 import { authGuard } from "../helpers/authGuard";
 import { refreshTokenMiddleware } from "../helpers/refreshTokenMiddleware";
 import { adminAuthGuard } from "../helpers/adminAuthGuard";
-import { uploadOrganizationPicture, uploadOrganizationLogo } from "../config/configMulter";
+//import { uploadOrganizationPicture, uploadOrganizationLogo } from "../config/configMulter";
 const organizationRouter = express.Router();
 
 
 organizationRouter.post("/create-organization", authGuard, refreshTokenMiddleware, createOrganization);
 organizationRouter.patch("/edit-organization/:orgId", authGuard, refreshTokenMiddleware, updateOrganization);
 
-organizationRouter.patch("/edit-organization-logo/:orgId", authGuard, refreshTokenMiddleware, uploadOrganizationLogo.single("logo"), updateOrganizationLogo);
-organizationRouter.patch("/edit-organization-picture/:orgId", authGuard, refreshTokenMiddleware, uploadOrganizationPicture.single("picture"), updateOrganizationPicture);
+// organizationRouter.patch("/edit-organization-pictures/:orgId", authGuard, refreshTokenMiddleware, uploadOrganizationLogo.single("logo"), updateOrganizationLogo);
+// organizationRouter.patch("/edit-organization-picture/:orgId", authGuard, refreshTokenMiddleware, uploadOrganizationPicture.single("picture"), updateOrganizationPicture);
 
 organizationRouter.post("/verify-organization/:orgId", adminAuthGuard, refreshTokenMiddleware, verifyOrganizationByAdmin);
 organizationRouter.post("/follow-organization/:orgId", authGuard, refreshTokenMiddleware, addFollowerOrganization);

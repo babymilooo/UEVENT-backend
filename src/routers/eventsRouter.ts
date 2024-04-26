@@ -6,6 +6,9 @@ import {
   deleteEventController,
   getTicketOptionsOfEventController,
   updateEventController,
+  getEventById,
+  addUserToAttendees,
+  getEventsForAttendeeByUserId
 } from "../controllers/eventsController";
 
 const eventsRouter = Router();
@@ -30,5 +33,9 @@ eventsRouter.delete(
   refreshTokenMiddleware,
   deleteEventController
 );
+
+eventsRouter.get("/get-event/:eventId", getEventById);
+eventsRouter.get("/toggle-attendee/:eventId", authGuard, refreshTokenMiddleware, addUserToAttendees);
+eventsRouter.get("/events-attendee", authGuard, refreshTokenMiddleware, getEventsForAttendeeByUserId);
 
 export { eventsRouter };
