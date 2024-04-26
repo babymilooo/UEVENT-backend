@@ -38,7 +38,7 @@ export async function getTicketOptionsOfEventController(
 export async function createEventController(req: Request | any, res: Response) {
   try {
     const data: IEventDto = req.body;
-    const { organizationId, name, date, price } = data;
+    const { organizationId, name, date, price, maxTickets } = data;
 
     if (!organizationId || !name || !date || !price)
       return res.status(400)
@@ -49,6 +49,9 @@ export async function createEventController(req: Request | any, res: Response) {
         );
     if (price < 50)
       return res.status(400).json(errorMessageObj("Minimal price is 50 cents"));
+
+    if (maxTickets < 100)
+      return res.status(400).json(errorMessageObj("Minimal tickets are 100"));
     
     const userId = req.userId;
     const org = await findOrganizationById(organizationId);
@@ -60,7 +63,7 @@ export async function createEventController(req: Request | any, res: Response) {
 
     const event = await createNewEvent(data);
     await event.populate('ticketOptions');
-    const respData = event.toObject();
+    const respData = event.toObject({ virtuals: true });
 
     res.status(201).json(respData);
   } catch (error) {
@@ -77,15 +80,17 @@ export async function updateEventController(req: Request | any, res: Response) {
     if (data.price && data.price < 50)
       return res.status(400).json(errorMessageObj("Minimal price is 50 cents"));
 
+    if (data.maxTickets && data.maxTickets < 100)
+      return res.status(400).json(errorMessageObj("Minimal tickets are 100"));
+    
     const { eventId } = req.params;
     const userId = req.userId;
     const event = await checkEventOrganization(eventId, userId);
     
     const updatedEvent = await updateEvent(event._id, data);
     await updatedEvent.populate('ticketOptions');
-    const respData = updatedEvent.toObject();
+    const respData = updatedEvent.toObject({ virtuals: true });
     return res.json(respData);
-
   } catch (error) {
     console.error(error);
     return res.sendStatus(500);
@@ -121,8 +126,9 @@ export async function getEventById(req: Request, res: Response) {
     const org = await findOrganizationById(event.organizationId);
     if (!org.isVerified) 
       throw new Error("Only verified organisations can view event"); 
-  
-    res.status(200).json(await modifyEntityPaths(event, EVENT_URL));
+
+    const respData = event.toObject({ virtuals: true });
+    res.status(200).json(await modifyEntityPaths(respData, EVENT_URL));
   } catch (error) {
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));
@@ -144,7 +150,8 @@ export async function addUserToAttendees(req: Request | any, res: Response) {
       throw new Error("Only verified organisations can view event"); 
   
     const newEvent = await toggleAttendee(event, userId);
-    res.status(200).json(await modifyEntityPaths(newEvent, EVENT_URL));
+    const respData = newEvent.toObject({ virtuals: true });
+    res.status(200).json(await modifyEntityPaths(respData, EVENT_URL));
   } catch (error) {
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));
@@ -158,8 +165,12 @@ export async function getEventsForAttendeeByUserId(req: Request | any, res: Resp
     const userId = req.userId;
     const page = parseInt(req.query.page) || 1;  
     const limit = parseInt(req.query.limit) || 10;
-    const events = await getEventsForAttendee(userId, page, limit);
-    res.status(200).json(events);
+    let eventsOld = await getEventsForAttendee(userId, page, limit);
+    const events: any = eventsOld.map(event => {
+      const eventData = event.toObject({ virtuals: true }); 
+      return eventData;
+    });
+    res.status(200).json(await modifyMultipleEntityPaths(events, EVENT_URL));
   } catch (error) {
     res.status(500).json(errorMessageObj('Error retrieving events' ));
   }

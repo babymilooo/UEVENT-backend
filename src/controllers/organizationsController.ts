@@ -150,10 +150,15 @@ export async function getEventsByOrganization(req:  Request, res: Response) {
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
-    const events = await getEventsByIdOrganization(orgId, skip, limit);
-    for (const e of events) {
+    const eventsOld = await getEventsByIdOrganization(orgId, skip, limit);
+    for (const e of eventsOld) {
       await e.populate('ticketOptions');
     }
+
+    const events: any = eventsOld.map(event => {
+      const eventData = event.toObject({ virtuals: true }); 
+      return eventData;
+    });
     
     res.status(200).json(await modifyMultipleEntityPaths(events, EVENT_URL));
   } catch (error) {
@@ -210,7 +215,7 @@ export async function searchOrganizationsByNameAndUser(req: Request, res: Respon
       return res.status(400).json({ message: "User ID is required for search." });
 
     const organizations = await getOrganizationsByNameAndUserId(name, userId, minFollowerCount, createdBefore, createdAfter, sortOrder, page, limit);
-    res.status(200).json(modifyMultipleEntityPaths(organizations, ORG_URL));
+    res.status(200).json(await modifyMultipleEntityPaths(organizations, ORG_URL));
   } catch (error) {
     if (error instanceof Error) 
       res.status(500).json({ message: error.message });

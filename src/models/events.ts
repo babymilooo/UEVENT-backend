@@ -19,7 +19,8 @@ export interface ISchemaEvent {
   };
   picture?: string;
   logo?: string;
-  artists?: string[]
+  artists?: string[],
+  maxTickets: number;
 }
 
 const eventSchema = new Schema<ISchemaEvent>({
@@ -90,11 +91,18 @@ const eventSchema = new Schema<ISchemaEvent>({
   artists : [{
     type: String,
     default: ""
-  }]
-}, { timestamps: true });
+  }],
+  maxTickets: {
+    type: Number,
+    min: 100,
+    required: true,
+  },
+}, { timestamps: true, 
+    toObject: { virtuals: true }, 
+    toJSON: { virtuals: true } });
 
 eventSchema.virtual("isOver").get(function () {
-  return this.date >= new Date();
+  return this.date < new Date();
 });
 
 export const Event = model<ISchemaEvent>("Event", eventSchema);
