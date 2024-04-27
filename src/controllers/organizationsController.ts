@@ -63,7 +63,7 @@ export async function updateOrganization(req: Request, res: Response) {
     }
   
     const updatedOrganization = await updateOrganizationByIdAndUserId(orgId, userId, updateData);
-    res.status(200).json(await modifyMultipleEntityPaths(await addFollowerCount(updatedOrganization), ORG_URL));
+    res.status(200).json(await modifyEntityPaths(await addFollowerCount(updatedOrganization), ORG_URL));
   } catch (error: any) {
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));
