@@ -38,20 +38,15 @@ export async function getTicketOptionsOfEventController(
 export async function createEventController(req: Request | any, res: Response) {
   try {
     const data: IEventDto = req.body;
-    const { organizationId, name, date, price, maxTickets } = data;
+    const { organizationId, name, date } = data;
 
-    if (!organizationId || !name || !date || !price)
+    if (!organizationId || !name || !date)
       return res.status(400)
         .json(
           errorMessageObj(
             "Bad request: organisationId, name, date and price are required"
           )
         );
-    if (price < 50)
-      return res.status(400).json(errorMessageObj("Minimal price is 50 cents"));
-
-    if (maxTickets < 100)
-      return res.status(400).json(errorMessageObj("Minimal tickets are 100"));
     
     const userId = req.userId;
     const org = await findOrganizationById(organizationId);
@@ -77,11 +72,6 @@ export async function createEventController(req: Request | any, res: Response) {
 export async function updateEventController(req: Request | any, res: Response) {
   try {
     const data: IEventUpdateDto = req.body;
-    if (data.price && data.price < 50)
-      return res.status(400).json(errorMessageObj("Minimal price is 50 cents"));
-
-    if (data.maxTickets && data.maxTickets < 100)
-      return res.status(400).json(errorMessageObj("Minimal tickets are 100"));
     
     const { eventId } = req.params;
     const userId = req.userId;

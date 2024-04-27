@@ -7,9 +7,8 @@ export interface ISchemaEvent {
   name: string;
   description?: string;
   date: Date;
-  website?: string;
+  time: string;
   attendees: Types.ObjectId[];
-  price: number;
   ticketOptions: Types.ObjectId[];
   reminderSent: boolean;
   readonly isOver: boolean;
@@ -20,7 +19,6 @@ export interface ISchemaEvent {
   picture?: string;
   logo?: string;
   artists?: string[],
-  maxTickets: number;
 }
 
 const eventSchema = new Schema<ISchemaEvent>({
@@ -47,9 +45,9 @@ const eventSchema = new Schema<ISchemaEvent>({
     type: Date,
     required: true,
   },
-  website: {
+  time: {
     type: String,
-    default: "",
+    required: true,
   },
   attendees: [{
     type: Schema.Types.ObjectId,
@@ -60,17 +58,13 @@ const eventSchema = new Schema<ISchemaEvent>({
     ref: "TicketOption"
   }],
   //price in USD cents
-  price: {
-    type: Number,
-    min: 50,
-    required: true,
-  },
+
   reminderSent: {
     type: Boolean,
     required: true,
     default: false,
   },
-  location: { 
+  location: {
     latitude: {
       type: String,
       default: ""
@@ -80,28 +74,26 @@ const eventSchema = new Schema<ISchemaEvent>({
       default: ""
     }
   },
-  picture : { 
-    type: String, 
+  picture: {
+    type: String,
     default: ""
   },
   logo: {
     type: String,
     default: ""
   },
-  artists : [{
+  artists: [{
     type: String,
     default: ""
   }],
-  maxTickets: {
-    type: Number,
-    min: 100,
-    required: true,
-  },
-}, { timestamps: true, 
-    toObject: { virtuals: true }, 
-    toJSON: { virtuals: true } });
+}, {
+  timestamps: true,
+  toObject: { virtuals: true },
+  toJSON: { virtuals: true }
+});
 
 eventSchema.virtual("isOver").get(function () {
+  console.log(this.date, new Date());
   return this.date < new Date();
 });
 

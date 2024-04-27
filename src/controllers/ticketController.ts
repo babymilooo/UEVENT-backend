@@ -21,7 +21,7 @@ export async function createTicketController(req: Request, res: Response) {
           owner: registeredUser._id,
           ownerEmail: ownerEmail.trim(),
           ownerName,
-          price: event.price,
+          // price: event.price,
           category: 'Ticket',
           isUsed: false,
         });
@@ -34,7 +34,7 @@ export async function createTicketController(req: Request, res: Response) {
           event: event._id,
           ownerEmail: ownerEmail.trim(),
           ownerName,
-          price: event.price,
+          // price: event.price,
           category: 'Ticket',
           isUsed: false,
         });
