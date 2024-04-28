@@ -1,3 +1,4 @@
+import { findUserById } from "./userService";
 export async function handleSpotifyClientCredentials(spotifyApi: any) {
   const data = await spotifyApi.clientCredentialsGrant();
   const accessToken = data.body.access_token
@@ -18,5 +19,14 @@ export async function getAllFollowedArtists(spotifyApi: any) {
   } catch (error) {
 
     throw new Error("Failed to fetch followed artists");
+  }
+}
+
+export async function isUserRegisteredThroughSpotify(userId: string) {
+  try {
+    const user = await findUserById(userId);
+    return user.isRegisteredViaSpotify;
+  } catch (error) {
+    return false;
   }
 }

@@ -1,3 +1,4 @@
+import * as bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import {
   createHashPassword,
@@ -9,6 +10,7 @@ import {
 } from "../services/userService";
 import { errorMessageObj } from "../helpers/errorMessageObj";
 import { updateFile, removeSingleFile } from "../helpers/updateAndDeleteImage";
+import { cursorTo } from "readline";
 
 export async function updateProfile(req: Request, res: Response) {
   try {
@@ -23,11 +25,6 @@ export async function updateProfile(req: Request, res: Response) {
         );
 
     const updateData: any = { ...req.body };
-    if (req.body.password) {
-      const passwordHash = await createHashPassword(req.body.password);
-      updateData.passwordHash = passwordHash;
-      delete updateData.password;
-    }
 
     const updateInfoUser = await updateUser(userId, updateData);
     res.status(200).json(await removeSensitiveData(updateInfoUser));
@@ -38,6 +35,34 @@ export async function updateProfile(req: Request, res: Response) {
       res.status(500).json(errorMessageObj("Failed to update profile"));
   }
 }
+
+export async function changePassword(req: Request, res: Response) {
+  try {
+    const userId = (req as any).userId as string;
+    const { currentPassword, newPassword } = req.body;
+    const currentUser = await findUserById(userId);
+    if (!currentPassword || !newPassword)
+      return res.status(400).json(errorMessageObj("Current password and New password are required."));
+
+    if (currentUser.passwordHash && bcrypt.compareSync(currentPassword, currentUser.passwordHash)) {
+      const passwordHash = await createHashPassword(newPassword);
+      currentUser.passwordHash = passwordHash;
+      await currentUser.save();
+      res.status(200).json(errorMessageObj("Password successfully changed."));
+    } else
+      return res
+        .status(403)
+        .json(errorMessageObj("The password does not match"));
+
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json(errorMessageObj(error.message));
+    } else {
+      res.status(500).json(errorMessageObj("Failed to change password"));
+    }
+  }
+}
+
 
 export async function updateAvatar(req: Request, res: Response) {
   try {

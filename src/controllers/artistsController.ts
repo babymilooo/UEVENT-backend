@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import {
   handleSpotifyClientCredentials,
   getAllFollowedArtists,
+  isUserRegisteredThroughSpotify
 } from "../services/artistService";
 import { spotifyApi } from "../config/spotifyConfig";
 import { updateAccessTokenForUser } from "../services/tokenService";
@@ -109,6 +110,11 @@ export async function getAllFollowedArtistsSpotify(
   res: Response
 ) {
   try {
+    const userId = (req as any).userId as string;
+    const registeredThroughSpotify = await isUserRegisteredThroughSpotify(userId);
+    if (!registeredThroughSpotify) 
+      return res.status(200).json([]);
+
     const { access_token_spotify } = req.cookies;
     spotifyApi.setAccessToken(access_token_spotify);
     const artists = await getAllFollowedArtists(spotifyApi);
