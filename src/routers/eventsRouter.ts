@@ -8,7 +8,8 @@ import {
   updateEventController,
   getEventById,
   addUserToAttendees,
-  getEventsForAttendeeByUserId
+  getEventsForAttendeeByUserId,
+  getEventsByCountryAndSearch
 } from "../controllers/eventsController";
 
 const eventsRouter = Router();
@@ -37,5 +38,5 @@ eventsRouter.delete(
 eventsRouter.get("/get-event/:eventId", getEventById);
 eventsRouter.get("/toggle-attendee/:eventId", authGuard, refreshTokenMiddleware, addUserToAttendees);
 eventsRouter.get("/events-attendee", authGuard, refreshTokenMiddleware, getEventsForAttendeeByUserId);
-
+eventsRouter.get("/get-events", getEventsByCountryAndSearch);
 export { eventsRouter };
