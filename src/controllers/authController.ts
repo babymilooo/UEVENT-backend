@@ -129,12 +129,16 @@ export async function refreshAccessToken(req: Request, res: Response) {
     const inputTokens = extractTokens(req, 1);
     if (!inputTokens) return res.status(401).json(errorMessageObj("Not Authorized"));
     console.log(inputTokens);
+    let decoded = null;
+    try {
+      decoded = await verifyToken(
+        ETokenType.Refresh,
+        inputTokens.refreshToken
+      );
+    } catch (error) {
+      return res.status(401).json(errorMessageObj("Not Authorized"));
+    }
     
-
-    const decoded = await verifyToken(
-      ETokenType.Refresh,
-      inputTokens.refreshToken
-    );
     const user = await findUserById(decoded.id);
     if (user.isRegisteredViaSpotify)
       await updateAccessTokenForUser(user.id, spotifyApi, res);

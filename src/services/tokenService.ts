@@ -46,7 +46,7 @@ export async function signToken(
 }
 
 export async function verifyToken(type: ETokenType, token: string) {
-  if (type == ETokenType.Refresh && invalidatedRefreshTokenSet.has(token))
+  if (type === ETokenType.Refresh && invalidatedRefreshTokenSet.has(token))
     throw new Error("Token is invalidated");
   const config = getConfig(type);
   if (!config.secret) throw new Error("Token Secret not set");
