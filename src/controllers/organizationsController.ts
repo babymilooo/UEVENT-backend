@@ -20,6 +20,7 @@ import {
 import { IOrganizationUpdateDto, IOrganizationDto } from "../types/organization";
 import { modifyMultipleEntityPaths, modifyEntityPaths } from "../helpers/updateAndDeleteImage";
 import { sendOrganisationVerifiedEmail, sendRequestOrgVerificationEmail } from "../services/emailService";
+import { countTotalOrganizations } from "../services/organizationsService";
 
 const ORG_URL = process.env.ORG_URL || "/static/organization/";
 const EVENT_URL = process.env.EVENT_URL || "/static/event/";
@@ -175,7 +176,15 @@ export async function getMyOrganizations(req: Request, res: Response) {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const organizations = await getOrganizations({ createdBy: userId }, page, limit);
-    res.status(200).json(await modifyMultipleEntityPaths(organizations, ORG_URL));
+    const totalItems = await countTotalOrganizations(userId); 
+    const totalPages = Math.ceil(totalItems / limit);
+
+    res.status(200).json({
+      organizations: await modifyMultipleEntityPaths(organizations, ORG_URL),
+      totalPages,
+      totalItems,
+      currentPage: page
+    });
   } catch (error) {
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));
