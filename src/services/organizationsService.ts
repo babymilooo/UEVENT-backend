@@ -148,3 +148,7 @@ export async function getOrganizationsByNameAndUserId(name: string, userId: stri
 
   return organizationsWithFollowerCount;
 }
+
+export async function findAllOgranizationByCreatedId(userId: string) {
+  return await Organization.find({ createdBy: userId });
+}

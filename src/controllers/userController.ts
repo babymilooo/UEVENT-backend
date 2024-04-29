@@ -10,7 +10,9 @@ import {
 } from "../services/userService";
 import { errorMessageObj } from "../helpers/errorMessageObj";
 import { updateFile, removeSingleFile } from "../helpers/updateAndDeleteImage";
-import { cursorTo } from "readline";
+import { IUserUpdateDto } from "../types/user";
+import { sendVerificationEmail } from "../services/emailService";
+import { deleteUserAndAssociations } from "../services/userService";
 
 export async function updateProfile(req: Request, res: Response) {
   try {
@@ -24,8 +26,9 @@ export async function updateProfile(req: Request, res: Response) {
           )
         );
 
-    const updateData: any = { ...req.body };
-
+    const updateData: IUserUpdateDto = { ...req.body };
+    if(updateData.email !== currentUser.email)
+      updateData.emailVerified = false;
     const updateInfoUser = await updateUser(userId, updateData);
     res.status(200).json(await removeSensitiveData(updateInfoUser));
   } catch (error) {
@@ -54,6 +57,34 @@ export async function changePassword(req: Request, res: Response) {
         .status(403)
         .json(errorMessageObj("The password does not match"));
 
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json(errorMessageObj(error.message));
+    } else {
+      res.status(500).json(errorMessageObj("Failed to change password"));
+    }
+  }
+}
+
+export async function deleteAccount(req: Request, res: Response) {
+  try {
+    const userId = (req as any).userId as string;
+    await deleteUserAndAssociations(userId);
+  } catch(error) {
+    if (error instanceof Error) {
+      res.status(500).json(errorMessageObj(error.message));
+    } else {
+      res.status(500).json(errorMessageObj("Failed to delete account"));
+    }
+  }
+}
+
+export async function verifyEmailWithAccount(req: Request, res: Response) {
+  try {
+    const userId = (req as any).userId as string;
+    const currentUser = await findUserById(userId);
+    await sendVerificationEmail(currentUser);
+    res.status(200).json(errorMessageObj("Verification email successfully sent"));
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json(errorMessageObj(error.message));

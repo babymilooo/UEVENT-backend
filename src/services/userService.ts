@@ -6,6 +6,12 @@ import { IUserDto, IUserUpdateDto } from "../types/user";
 import { refreshSpotifyAccessToken } from "../services/tokenService";
 import { sendVerificationEmail } from "./emailService";
 import { Types } from "mongoose";
+import { IUser } from "../models/user";
+import { 
+  findAllOgranizationByCreatedId, 
+  deleteAllEventsByOrganization, 
+  deleteOrganization 
+} from "./organizationsService";
 
 export async function createHashPassword(password: string): Promise<string> {
   if (new TextEncoder().encode(password).length > 72) {
@@ -79,11 +85,34 @@ export async function findUserByEmail(email: string) {
 }
 
 export async function updateUser(id: string, updateData: IUserUpdateDto) {
-  return await User.findByIdAndUpdate(id, updateData, { new: true }).exec();
+  const updateUser = await User.findByIdAndUpdate(id, updateData, { new: true }).exec() as IUser | null
+  if (!updateUser) 
+    throw new Error('No user found with the given ID');
+
+  if (updateData.email && !updateUser.emailVerified) {
+    await sendVerificationEmail(updateUser);
+  }
+  return updateUser;
 }
 
 export async function deleteUser(id: string) {
   return await User.findByIdAndDelete(id).exec();
+}
+
+export async function deleteUserAndAssociations(userId: string) {
+  try {
+    const organizations = await findAllOgranizationByCreatedId(userId);
+    if (organizations) {
+      for (const org of organizations) {
+        await deleteAllEventsByOrganization(org._id);
+  
+        await deleteOrganization(org._id);
+      }
+    } 
+    await deleteUser(userId);
+  } catch (error) {
+    throw new Error("Error during deletion");
+  }
 }
 
 export async function removeSensitiveData(user: any) {

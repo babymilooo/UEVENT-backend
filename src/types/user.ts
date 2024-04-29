@@ -12,8 +12,8 @@ export interface IUserDto {
 
 export interface IUserUpdateDto {
   userName?: string;
-  passwordHash?: string;
-  profilePicture?: string;
+  email?: string;
   role?: string;
+  emailVerified?: boolean
 }
 
