@@ -136,7 +136,7 @@ export async function refreshAccessToken(req: Request, res: Response) {
         inputTokens.refreshToken
       );
     } catch (error) {
-      return res.status(401).json(errorMessageObj("Not Authorized"));
+      return res.status(401).json(errorMessageObj("Could not verify Token"));
     }
     
     const user = await findUserById(decoded.id);
