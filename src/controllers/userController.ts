@@ -13,6 +13,7 @@ import { updateFile, removeSingleFile } from "../helpers/updateAndDeleteImage";
 import { IUserUpdateDto } from "../types/user";
 import { sendVerificationEmail } from "../services/emailService";
 import { deleteUserAndAssociations } from "../services/userService";
+import { deleteAuthTokensFromCookies } from "../services/tokenService";
 
 export async function updateProfile(req: Request, res: Response) {
   try {
@@ -70,6 +71,8 @@ export async function deleteAccount(req: Request, res: Response) {
   try {
     const userId = (req as any).userId as string;
     await deleteUserAndAssociations(userId);
+    await deleteAuthTokensFromCookies(res);
+    res.status(200).json(errorMessageObj("Account successfully deleted"));
   } catch(error) {
     if (error instanceof Error) {
       res.status(500).json(errorMessageObj(error.message));
