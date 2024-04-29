@@ -1,5 +1,5 @@
 export interface ITicketCreateDto {
-  eventId: string;
+  ticketOptionId: string;
   ownerEmail: string;
   ownerName: string;
 }

@@ -6,22 +6,23 @@ import { Ticket } from "../models/tickets";
 import { ITicketCreateDto } from "../types/ticket";
 import { deleteTicketById, findTicketById, findTicketsByOwnerEmail } from "../services/ticketService";
 import { sendTicketToOwnerAsPDF } from "../services/emailService";
+import { findTicketOption } from "../services/ticketOptionService";
 
 export async function createTicketController(req: Request, res: Response) {
   try {
-    const { eventId, ownerEmail, ownerName } = req.body as ITicketCreateDto;
-    if (!eventId || !ownerEmail || !ownerName) return res.status(400).json(errorMessageObj('eventId, ownerEmail and ownerName are required'));
+    const { ticketOptionId, ownerEmail, ownerName } = req.body as ITicketCreateDto;
+    if (!ticketOptionId || !ownerEmail || !ownerName) return res.status(400).json(errorMessageObj('ticketOptionIdId, ownerEmail and ownerName are required'));
     const registeredUser = await findUserByEmail(ownerEmail.trim());
-    const event = await findEventById(eventId);
-    if (!event) return res.status(404).json(errorMessageObj('Event not found'));
+    const ticketOption = await findTicketOption(ticketOptionId)
+    if (!ticketOption) return res.status(404).json(errorMessageObj('Event not found'));
     try {
       if (registeredUser) {
         const ticket = new Ticket({
-          event: event._id,
+          event: ticketOption.event,
           owner: registeredUser._id,
           ownerEmail: ownerEmail.trim(),
           ownerName,
-          // price: event.price,
+          price: ticketOption.price,
           category: 'Ticket',
           isUsed: false,
         });
@@ -31,10 +32,10 @@ export async function createTicketController(req: Request, res: Response) {
       }
       else {
         const ticket = new Ticket({
-          event: event._id,
+          event: ticketOption.event,
           ownerEmail: ownerEmail.trim(),
           ownerName,
-          // price: event.price,
+          price: ticketOption.price,
           category: 'Ticket',
           isUsed: false,
         });
