@@ -3,7 +3,7 @@ import { ISchemaEvent } from "../models/events";
 export interface IEventDto
   extends Omit<
     ISchemaEvent,
-    "_id" | "attendees" | "hidden" | "ticketOptions" | "picture" | "logo"
+    "_id" | "followers" | "hidden" | "ticketOptions" | "picture" | "logo"
   > {
   hidden?: boolean;
 }

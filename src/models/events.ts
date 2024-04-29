@@ -8,7 +8,7 @@ export interface ISchemaEvent {
   description?: string;
   date: Date;
   time: string;
-  attendees: Types.ObjectId[];
+  followers: Types.ObjectId[];
   ticketOptions: Types.ObjectId[];
   reminderSent: boolean;
   readonly isOver: boolean;
@@ -50,7 +50,7 @@ const eventSchema = new Schema<ISchemaEvent>({
     type: String,
     required: true,
   },
-  attendees: [{
+  followers: [{
     type: Schema.Types.ObjectId,
     ref: "User",
   }],
