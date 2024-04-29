@@ -117,10 +117,11 @@ export async function deleteUserAndAssociations(userId: string) {
 
 export async function removeSensitiveData(user: any) {
   const userObject = user.toObject ? user.toObject() : user._doc ? user._doc : user;
-  const avatarPath = userObject.profilePicture ? await generateAvatarPath(userObject.profilePicture) : undefined;
-  if (avatarPath)
-    userObject.profilePicture = avatarPath;
-
+  if (userObject.profilePicture && !userObject.isRegisteredViaSpotify) {
+    const generatedAvatarPath = await generateAvatarPath(userObject.profilePicture);
+    if (generatedAvatarPath) 
+      userObject.profilePicture = generatedAvatarPath;
+  }
   delete userObject.passwordHash; 
   delete userObject.spotifyRefreshToken; 
   return userObject;
