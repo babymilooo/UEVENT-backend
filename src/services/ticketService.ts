@@ -50,6 +50,8 @@ export async function createNewTicket(
       isUsed: false,
     });
     await newTicket.save();
+    ticketOption.quantity = ticketOption.quantity - 1;
+    await ticketOption.save();
     return newTicket;
   } else {
     const newTicket = new Ticket({
@@ -62,6 +64,8 @@ export async function createNewTicket(
       isUsed: false,
     });
     await newTicket.save();
+    ticketOption.quantity = ticketOption.quantity - 1;
+    await ticketOption.save();
     return newTicket;
   }
 }

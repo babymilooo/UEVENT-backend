@@ -5,6 +5,7 @@ export interface ITicketOptionDto {
   name: string;
   price: number;
   description?: string;
+  quantity: number;
 }
 
 export interface ITicketOptionUpdateDto extends Omit<Partial<ITicketOptionDto>, 'event'> {}

@@ -15,15 +15,26 @@ export async function createCheckoutSessionController(
 ) {
   try {
     const { ticketOptionId, ownerName } = req.body;
-    if (!ticketOptionId || typeof ticketOptionId !== 'string')
-      return res.status(400).json(errorMessageObj("ticketOptionId is required"));
-    if (!ownerName || typeof ownerName !== 'string') return res.status(400).json(errorMessageObj("ownerName is required"));
+    if (!ticketOptionId || typeof ticketOptionId !== "string")
+      return res
+        .status(400)
+        .json(errorMessageObj("ticketOptionId is required"));
+    if (!ownerName || typeof ownerName !== "string")
+      return res.status(400).json(errorMessageObj("ownerName is required"));
     const ticketOption = await findTicketOption(ticketOptionId);
-    if (!ticketOption) return res.status(404).json(errorMessageObj("TicketOption not found"));
-    
-    const product = await stripeApi.products.retrieve(ticketOption.stripeProductId, {
-      expand: ["default_price"],
-    });
+    if (!ticketOption)
+      return res.status(404).json(errorMessageObj("TicketOption not found"));
+    if (ticketOption.quantity <= 0)
+      return res
+        .status(409)
+        .json(errorMessageObj("TicketOption not available/sold out"));
+
+    const product = await stripeApi.products.retrieve(
+      ticketOption.stripeProductId,
+      {
+        expand: ["default_price"],
+      }
+    );
     if (!product)
       return res
         .status(404)
@@ -62,7 +73,7 @@ export async function createCheckoutSessionController(
           ticketOptionId: ticketOptionId,
           eventId: ticketOption.event.toString(),
           userId: userId,
-          ownerName
+          ownerName,
         },
         customer_email: user.email,
       });
@@ -81,7 +92,7 @@ export async function createCheckoutSessionController(
         metadata: {
           ticketOptionId: ticketOptionId,
           eventId: ticketOption.event.toString(),
-          ownerName
+          ownerName,
         },
       });
       return res.json({ clientSecret: session.client_secret });
@@ -92,7 +103,10 @@ export async function createCheckoutSessionController(
   }
 }
 
-export async function getStripeSessionByIdController(req: Request, res: Response) {
+export async function getStripeSessionByIdController(
+  req: Request,
+  res: Response
+) {
   try {
     if (!req.query.session_id || typeof req.query.session_id !== "string")
       return res
@@ -118,28 +132,28 @@ export async function getStripeSessionByIdController(req: Request, res: Response
 export function stripeCheckoutWebhook(req: Request, res: Response) {
   const event: Stripe.Event = req.body;
   switch (event.type) {
-    case 'checkout.session.completed':
+    case "checkout.session.completed":
       const session: Stripe.Checkout.Session = event.data.object;
-      const userEmail = session.customer_email || session.customer_details?.email;
+      const userEmail =
+        session.customer_email || session.customer_details?.email;
       // const userEmail = 'mark.tkachev2004@gmail.com'
-      
-      console.log(userEmail);
-      
+
+      // console.log(userEmail);
+
       if (!userEmail) break;
       const { eventId: ticketOptionId, ownerName } = session.metadata as any;
-      console.log(session.metadata);
-      
+      // console.log(session.metadata);
+
       if (!ticketOptionId || !ownerName) break;
       createNewTicket(ticketOptionId, userEmail, ownerName).then((ticket) => {
-        sendTicketToOwnerAsPDF(ticket).catch(() => (console.log('aboba')
-        ));
-      })
+        sendTicketToOwnerAsPDF(ticket).catch(() => {});
+      });
 
       break;
-  
+
     default:
       console.log(`Unhandled event type ${event.type}`);
       break;
   }
-  return res.json({received: true});
+  return res.json({ received: true });
 }

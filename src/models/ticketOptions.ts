@@ -6,6 +6,7 @@ export interface ITicketOptionSchema {
   price: number;
   description?: string;
   stripeProductId: string;
+  quantity: number;
 }
 
 const ticketOptionSchema = new Schema<ITicketOptionSchema>({
@@ -26,6 +27,11 @@ const ticketOptionSchema = new Schema<ITicketOptionSchema>({
   },
   description: {
     type: String,
+  },
+  quantity: {
+    type: Number,
+    required: true,
+    min: 0
   },
   stripeProductId: {
     type: String,

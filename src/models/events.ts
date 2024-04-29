@@ -15,6 +15,7 @@ export interface ISchemaEvent {
   location?: {
     latitude: string;
     longitude: string;
+    countryCode: string;
   };
   picture?: string;
   logo?: string;
@@ -70,6 +71,10 @@ const eventSchema = new Schema<ISchemaEvent>({
       default: ""
     },
     longitude: {
+      type: String,
+      default: ""
+    },
+    countryCode: {
       type: String,
       default: ""
     }
