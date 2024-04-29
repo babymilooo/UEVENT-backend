@@ -141,9 +141,6 @@ export async function refreshAccessToken(req: Request, res: Response) {
 
     // const tokens = await setAccessToken(user.id, inputTokens.refreshToken);
     // await setAuthTokensToCookies(res, tokens);
-    const avatarPath = user.profilePicture ? await generateAvatarPath(user.profilePicture) : undefined;
-    if (avatarPath)
-      user.profilePicture = avatarPath;
     await setAuthTokens(res, user);
     invalidateRefreshToken(inputTokens.refreshToken);
     return res.status(200).json(await removeSensitiveData(user));
