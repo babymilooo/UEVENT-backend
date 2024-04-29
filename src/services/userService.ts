@@ -117,6 +117,9 @@ export async function deleteUserAndAssociations(userId: string) {
 
 export async function removeSensitiveData(user: any) {
   const userObject = user.toObject ? user.toObject() : user._doc ? user._doc : user;
+  const avatarPath = user.profilePicture ? await generateAvatarPath(user.profilePicture) : undefined;
+  if (avatarPath)
+    user.profilePicture = avatarPath;
   
   delete userObject.passwordHash; 
   delete userObject.spotifyRefreshToken; 
