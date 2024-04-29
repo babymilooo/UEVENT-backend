@@ -6,6 +6,8 @@ import { IEventDto, IEventUpdateDto } from "../types/event";
 import { findOrganizationById } from "./organizationsService";
 import { objDataToString } from "../helpers/objDataToString";
 import mongoose from 'mongoose';
+import { modifyMultipleEntityPaths } from "../helpers/updateAndDeleteImage";
+const EVENT_URL = process.env.EVENT_URL || "/static/event/";
 
 export async function findAllEventsOrganisation(
   orgId: string | Types.ObjectId,
@@ -36,7 +38,7 @@ export async function createNewEvent(data: IEventDto): Promise<IEvent> {
   // if (!org) throw new Error("Organisation does not exist");
   const newEvent = new Event({
     ...data,
-    followers: [],
+    attendees: [],
   });
   await newEvent.save();
 
@@ -71,10 +73,10 @@ export async function checkEventOrganization(eventId: string, userId: string) {
 
 
 export async function toggleAttendee(event: any, userId: string) {
-  if (event.followers.some((id: any) => id.toString() === userId))
-    event.followers = event.followers.filter((id: any) => id.toString() !== userId);
+  if (event.attendees.some((id: any) => id.toString() === userId))
+    event.attendees = event.attendees.filter((id: any) => id.toString() !== userId);
   else
-    event.followers.push(new mongoose.Types.ObjectId(userId));
+    event.attendees.push(new mongoose.Types.ObjectId(userId));
 
   await event.save();
   return event;
@@ -82,8 +84,56 @@ export async function toggleAttendee(event: any, userId: string) {
 
 export async function getEventsForAttendee(userId: string, page: number, limit: number) {
   const skip = (page - 1) * limit;
-  return await Event.find({ followers: userId })
+  return await Event.find({ attendees: userId })
                     .skip(skip)
                     .limit(limit)
                     .exec();
+}
+
+export async function getEventsByCountry(options: any) {
+  const {
+    countryCode,
+    page,
+    limit,
+    artists,
+    eventName,
+    startDate,
+    endDate,
+    order
+  } = options;
+
+  const query: any = { "location.countryCode": countryCode };
+
+  if (artists && artists.length > 0) {
+    query['artists'] = { $in: artists };
+  }
+
+  if (eventName && eventName.trim()) {
+    query['name'] = { $regex: new RegExp(eventName, 'i') }; 
+  }
+
+  if (startDate && endDate) {
+    query['date'] = { $gte: new Date(startDate), $lte: new Date(endDate) };
+  }
+
+  const sortOption = order === "newest" ? '-date' : 'date';
+
+  try {
+    const eventsFirst = await Event.find(query)
+                              .sort(sortOption)
+                              .skip((page - 1) * limit)
+                              .limit(limit)
+                              .exec();
+    const total = await Event.countDocuments(query);
+    const eventTwo = await modifyMultipleEntityPaths(eventsFirst, EVENT_URL)
+    return {
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+      eventTwo
+    };
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    throw error;
+  }
 }
