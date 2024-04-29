@@ -113,30 +113,69 @@ export async function ticketHtml(ticket: ITicket): Promise<string> {
   return `
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ticket</title>
-</head>
-<body>
-  <h2 style="text-align: center;">Ticket to ${event?.name}</h2>
-  <div style="display: block; width: 200px; height: 200px;">${qrSvg}</div>
-  <p>
-    Event Name: ${event?.name}
-    <br/>
-    Ticket Type: ${ticketOption?.name}
-    <br/>
-    Event Date: ${event?.date.toString()}
-    <br/>
-    Ticket Price: ${ticket.price / 100}$
-    <br/>
-    Owner Name: ${ticket.ownerName}
-    <br/>
-    Ticket Description: ${ticketOption?.description}
-    <br/>
-  </p>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ticket</title>
+    <style>
+      * {
+        font-family: Helvetica, sans-serif;
+      }
+      .container {
+        display: flex;
+        flex-direction: row;
+        justify-content: baseline;
+        gap: 10px;
+        padding: 10px;
+      }
+      table {
+        font-size: larger;
+        width: 600px;
+        border-radius: 20px;
+        border: 2px greenyellow solid;
+        padding: 5px;
+      }
+      td:last-child {
+        border-bottom: 2px greenyellow solid;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- template for easier code writing -->
+    <h1 style="text-align: center">UEVENT MUSIC</h2>
+    <h2 style="text-align: center">Ticket to ${event?.name}</h2>
+    <div class="container">
+      <svg
+        style="
+          display: block;
+          width: 200px;
+          height: 200px;
+          background-color: blue;
+        "
+      >
+        ${qrSvg}
+      </svg>
+      <table>
+        <tr>
+          <td>Event Name: ${event?.name}</td>
+        </tr>
+        <tr>
+          <td>Event Date: ${event?.date.toString()}</td>
+        </tr>
+        <tr>
+          <td>Ticket Type: ${ticketOption?.name}</td>
+        </tr>
+        <tr>
+          <td>Ticket Price: ${ticket.price / 100}$</td>
+        </tr>
+        <tr>
+          <td style="border: none;">Owner Name: ${ticket.ownerName}</td>
+        </tr>
+      </table>
+    </div>
+  </body>
 </html>
+
   `;
 }
 
