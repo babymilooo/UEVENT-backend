@@ -10,12 +10,12 @@ import {
   findEventById,
   updateEvent,
   toggleAttendee,
-  getEventsForAttendee
+  getEventsForAttendee,
+  getEventsByCountry
 } from "../services/eventsService";
 import { getTicketOptionsOfEvent } from "../services/ticketOptionService";
 import { checkEventOrganization } from "../services/eventsService";
 import { modifyMultipleEntityPaths, modifyEntityPaths } from "../helpers/updateAndDeleteImage";
-
 const EVENT_URL = process.env.EVENT_URL || "/static/event/";
 
 export async function getTicketOptionsOfEventController(
@@ -165,6 +165,36 @@ export async function getEventsForAttendeeByUserId(req: Request | any, res: Resp
     res.status(500).json(errorMessageObj('Error retrieving events' ));
   }
 }
+
+export async function getEventsByCountryAndSearch(req: Request | any, res: Response) {
+  try {
+  
+    const countryCode = req.query.countryCode;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const artists = req.query.artists ? JSON.parse(req.query.artists) : [];
+    const eventName = req.query.eventName || "";
+    const startDate = req.query.startDate || "";
+    const endDate = req.query.endDate || "";
+    const order = req.query.order || "newest";
+    
+    const searchOptions = {
+      countryCode,
+      page,
+      limit,
+      artists,
+      eventName,
+      startDate,
+      endDate,
+      order
+    };
+    const result = await getEventsByCountry(searchOptions);
+    return res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json(errorMessageObj('Server error'));
+  }
+}
+
 
 //TODO
 // export async function getAllEventsController(req: Request , res: Response) {
