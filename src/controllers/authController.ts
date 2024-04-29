@@ -124,11 +124,11 @@ export async function logout(req: Request, res: Response) {
 
 export async function refreshAccessToken(req: Request, res: Response) {
   try {
-    console.log(invalidatedRefreshTokenSet);
+    // console.log(invalidatedRefreshTokenSet);
     
     const inputTokens = extractTokens(req, 1);
     if (!inputTokens) return res.status(401).json(errorMessageObj("Not Authorized"));
-    console.log(inputTokens);
+    // console.log(inputTokens);
     let decoded = null;
     try {
       decoded = await verifyToken(
@@ -159,7 +159,7 @@ export async function sendVerificationEmailController(
 ) {
   try {
     const { email } = req.body;
-    console.log(req.body);
+    // console.log(req.body);
 
     if (!email)
       return res.status(400).json(errorMessageObj("Email is required"));
