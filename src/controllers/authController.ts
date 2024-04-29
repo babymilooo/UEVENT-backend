@@ -32,6 +32,7 @@ import {
   sendVerificationEmail,
 } from "../services/emailService";
 import { JwtPayload } from "jsonwebtoken";
+import { generateAvatarPath } from "../services/userService";
 
 const FRONTEND_URL = process.env.FRONTEND_URL;
 
@@ -140,6 +141,9 @@ export async function refreshAccessToken(req: Request, res: Response) {
 
     // const tokens = await setAccessToken(user.id, inputTokens.refreshToken);
     // await setAuthTokensToCookies(res, tokens);
+    const avatarPath = user.profilePicture ? await generateAvatarPath(user.profilePicture) : undefined;
+    if (avatarPath)
+      user.profilePicture = avatarPath;
     await setAuthTokens(res, user);
     invalidateRefreshToken(inputTokens.refreshToken);
     return res.status(200).json(await removeSensitiveData(user));
