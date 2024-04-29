@@ -152,3 +152,7 @@ export async function getOrganizationsByNameAndUserId(name: string, userId: stri
 export async function findAllOgranizationByCreatedId(userId: string) {
   return await Organization.find({ createdBy: userId });
 }
+
+export async function countTotalOrganizations(userId: string) {
+  return await Organization.countDocuments({ createdBy: userId });
+}
