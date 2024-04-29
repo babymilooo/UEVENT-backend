@@ -155,7 +155,7 @@ export async function getEventsForAttendeeByUserId(req: Request | any, res: Resp
     const userId = req.userId;
     const page = parseInt(req.query.page) || 1;  
     const limit = parseInt(req.query.limit) || 10;
-    let eventsOld = await getEventsForAttendee(userId, page, limit);
+    const eventsOld = await getEventsForAttendee(userId, page, limit);
     const events: any = eventsOld.map(event => {
       const eventData = event.toObject({ virtuals: true }); 
       return eventData;

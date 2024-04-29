@@ -10,6 +10,8 @@ import {
   setAccessToken,
   setAccessTokenSpotify,
   updateAccessTokenForUser,
+  invalidateRefreshToken,
+  invalidatedRefreshTokenSet,
 } from "../services/tokenService";
 import { ILoginDto, IRegisterDto } from "../types/auth";
 import {
@@ -22,7 +24,7 @@ import {
   createHashPassword,
 } from "../services/userService";
 import { spotifyApi } from "../config/spotifyConfig";
-import { ETokenType } from "../types/token";
+import { ETokenType, IAuthTokens } from "../types/token";
 import { User } from "../models/user";
 import "dotenv/config";
 import {
@@ -115,13 +117,18 @@ export async function confirmOfAccessToSpotify(req: Request, res: Response) {
 
 export async function logout(req: Request, res: Response) {
   await deleteAuthTokensFromCookies(res);
+  invalidateRefreshToken((req as Request & { tokens:IAuthTokens }).tokens.refreshToken);
   return res.sendStatus(200);
 }
 
 export async function refreshAccessToken(req: Request, res: Response) {
   try {
+    console.log(invalidatedRefreshTokenSet);
+    
     const inputTokens = extractTokens(req, 1);
     if (!inputTokens) return res.status(401).json(errorMessageObj("Not Authorized"));
+    console.log(inputTokens);
+    
 
     const decoded = await verifyToken(
       ETokenType.Refresh,
@@ -131,8 +138,10 @@ export async function refreshAccessToken(req: Request, res: Response) {
     if (user.isRegisteredViaSpotify)
       await updateAccessTokenForUser(user.id, spotifyApi, res);
 
-    const tokens = await setAccessToken(user.id, inputTokens.refreshToken);
-    await setAuthTokensToCookies(res, tokens);
+    // const tokens = await setAccessToken(user.id, inputTokens.refreshToken);
+    // await setAuthTokensToCookies(res, tokens);
+    await setAuthTokens(res, user);
+    invalidateRefreshToken(inputTokens.refreshToken);
     return res.status(200).json(await removeSensitiveData(user));
   } catch (error) {
     return res.status(400).json(errorMessageObj("Invalid data"));
