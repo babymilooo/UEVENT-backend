@@ -146,8 +146,8 @@ export async function refreshAccessToken(req: Request, res: Response) {
     // const tokens = await setAccessToken(user.id, inputTokens.refreshToken);
     // await setAuthTokensToCookies(res, tokens);
     await setAuthTokens(res, user);
-    invalidateRefreshToken(inputTokens.refreshToken);
-    return res.status(200).json(await removeSensitiveData(user));
+    res.status(200).json(await removeSensitiveData(user));
+    if (inputTokens.refreshToken) invalidateRefreshToken(inputTokens.refreshToken);
   } catch (error) {
     return res.status(400).json(errorMessageObj("Invalid data"));
   }
