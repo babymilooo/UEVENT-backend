@@ -30,7 +30,7 @@ agenda.define("send event reminder", async (job) => {
     groups[eventId].push(ticket);
     return groups;
   }, {});
-  // console.log(groupedTickets);
+  console.log(groupedTickets);
   
   for (const eventId in groupedTickets) {
     if (Object.prototype.hasOwnProperty.call(groupedTickets, eventId)) {
