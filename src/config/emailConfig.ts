@@ -61,11 +61,11 @@ export function requestOrganisationVerificationEmail(
     <a href="${
       FRONTEND_URL +
       "/organizations/" +
-      encodeURIComponent(org._id) + "/verify-organization"
+      encodeURIComponent(org._id) + "/managment"
     }">${
       FRONTEND_URL +
       "/organizations/" +
-      encodeURIComponent(org._id) + "/verify-organization"
+      encodeURIComponent(org._id) + "/managment"
   }</a>
     <br/>
     Upon verification the organisation owner will receive a notification about it.
