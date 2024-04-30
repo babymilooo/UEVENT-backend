@@ -102,35 +102,67 @@ export async function getEventsByCountry(options: any) {
     order
   } = options;
 
-  const query: any = { "location.countryCode": countryCode };
+  let matchStage: any = {};
+  
+  matchStage['location.countryCode'] = countryCode;
 
   if (artists && artists.length > 0) {
-    query['artists'] = { $in: artists };
+    matchStage['artists'] = { $in: artists };
   }
 
   if (eventName && eventName.trim()) {
-    query['name'] = { $regex: new RegExp(eventName, 'i') }; 
+    matchStage['name'] = { $regex: new RegExp(eventName, 'i') };
   }
 
-  if (startDate && endDate) {
-    query['date'] = { $gte: new Date(startDate), $lte: new Date(endDate) };
+  if (startDate || endDate) {
+    matchStage['date'] = {};
+  
+    if (startDate)
+      matchStage['date'].$gte = new Date(startDate);
+  
+    if (endDate)
+      matchStage['date'].$lte = new Date(endDate);
   }
 
-  const sortOption = order === "newest" ? '-date' : 'date';
-
+  const pipeline: any[] = [
+    {
+      $lookup: {
+        from: "organizations",
+        localField: "organizationId",
+        foreignField: "_id",
+        as: "organization"
+      }
+    },
+    {
+      $unwind: "$organization" 
+    },
+    {
+      $match: {
+        ...matchStage,
+        "organization.isVerified": true
+      }
+    },
+    {
+      $sort: {
+        date: order === "newest" ? -1 : 1
+      }
+    },
+    {
+      $skip: (page - 1) * limit
+    },
+    {
+      $limit: limit
+    }
+  ];
   try {
-    const eventsFirst = await Event.find(query)
-                              .sort(sortOption)
-                              .skip((page - 1) * limit)
-                              .limit(limit)
-                              .exec();
-    const total = await Event.countDocuments(query);
+    const eventsFirst = await Event.aggregate(pipeline).exec();
+    const total = await Event.countDocuments(matchStage);
     const eventTwo = await modifyMultipleEntityPaths(eventsFirst, EVENT_URL)
     return {
       total,
       page,
       pages: Math.ceil(total / limit),
-      eventTwo
+      events: eventTwo
     };
   } catch (error) {
     console.error('Error fetching events:', error);

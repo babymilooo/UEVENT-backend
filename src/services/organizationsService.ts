@@ -132,7 +132,7 @@ export async function getOrganizations(query: Record<string, any>, page: number,
 }
 
 
-export async function getOrganizationsByNameAndUserId(name: string, userId: string, minFollowerCount: number | undefined, createdBefore: Date | undefined, createdAfter: Date | undefined, sortOrder: string, page: number, limit: number) {
+export async function getOrganizationsByNameAndUserId(name: string, userId: string, minFollowerCount: number | undefined, createdBefore: Date | undefined, createdAfter: Date | undefined, sortOrder: string, page: number, limit: number, ORG_URL: string) {
   const query: any = { createdBy: userId };
   if (name) query.name = { $regex: new RegExp(name, 'i') };
   if (minFollowerCount !== undefined) query.$expr = { $gte: [{ $size: "$followers" }, minFollowerCount] };
@@ -153,7 +153,14 @@ export async function getOrganizationsByNameAndUserId(name: string, userId: stri
     organizations.map(addFollowerCount)
   );
 
-  return organizationsWithFollowerCount;
+  const total = await Organization.countDocuments(query);
+  const organizationResult = await modifyMultipleEntityPaths(organizationsWithFollowerCount, ORG_URL)
+  return {
+    total,
+    page,
+    pages: Math.ceil(total / limit),
+    organixations: organizationResult
+  };
 }
 
 export async function findAllOgranizationByCreatedId(userId: string) {
