@@ -164,13 +164,7 @@ export async function getEventsByOrganization(req:  Request, res: Response) {
 
     const resEvents = await modifyMultipleEntityPaths(eventsNew, EVENT_URL);
     const totalPages = Math.ceil(totalItems / limit);
-    console.log(
-      {
-        events: resEvents,
-        totalItems,
-        totalPages
-      }
-    )
+    console.log(resEvents);
     res.status(200).json({
       events: resEvents,
       totalItems,
@@ -237,8 +231,8 @@ export async function searchOrganizationsByNameAndUser(req: Request, res: Respon
     if (!userId) 
       return res.status(400).json(errorMessageObj("User ID is required for search." ));
 
-    const organizations = await getOrganizationsByNameAndUserId(name, userId, minFollowerCount, createdBefore, createdAfter, sortOrder, page, limit);
-    res.status(200).json(await modifyMultipleEntityPaths(organizations, ORG_URL));
+    const organizations = await getOrganizationsByNameAndUserId(name, userId, minFollowerCount, createdBefore, createdAfter, sortOrder, page, limit, ORG_URL);
+    res.status(200).json(organizations);
   } catch (error) {
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));

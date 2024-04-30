@@ -116,7 +116,6 @@ export async function getEventById(req: Request, res: Response) {
     const org = await findOrganizationById(event.organizationId);
     if (!org.isVerified) 
       throw new Error("Only verified organisations can view event"); 
-    await event.populate('ticketOptions');
 
     const respData = event.toObject({ virtuals: true });
     res.status(200).json(await modifyEntityPaths(respData, EVENT_URL));
@@ -177,7 +176,7 @@ export async function getEventsByCountryAndSearch(req: Request | any, res: Respo
     const eventName = req.query.eventName || "";
     const startDate = req.query.startDate || "";
     const endDate = req.query.endDate || "";
-    const order = req.query.order || "newest";
+    const order = req.query.order || "oldest";
     
     const searchOptions = {
       countryCode,
