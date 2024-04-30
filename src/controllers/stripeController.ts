@@ -141,13 +141,15 @@ export function stripeCheckoutWebhook(req: Request, res: Response) {
       // console.log(userEmail);
 
       if (!userEmail) break;
-      const { eventId: ticketOptionId, ownerName } = session.metadata as any;
+      const { ticketOptionId, ownerName } = session.metadata as any;
       // console.log(session.metadata);
 
       if (!ticketOptionId || !ownerName) break;
-      createNewTicket(ticketOptionId, userEmail, ownerName).then((ticket) => {
-        sendTicketToOwnerAsPDF(ticket).catch(() => {});
-      });
+      createNewTicket(ticketOptionId, userEmail, ownerName)
+        .then((ticket) => {
+          sendTicketToOwnerAsPDF(ticket).catch(() => {});
+        })
+        .catch((error) => console.log(error));
 
       break;
 

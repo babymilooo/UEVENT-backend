@@ -143,10 +143,10 @@ export async function refreshAccessToken(req: Request, res: Response) {
     if (user.isRegisteredViaSpotify)
       await updateAccessTokenForUser(user.id, spotifyApi, res);
 
-    // const tokens = await setAccessToken(user.id, inputTokens.refreshToken);
-    // await setAuthTokensToCookies(res, tokens);
-    await setAuthTokens(res, user);
-    res.status(200).json(await removeSensitiveData(user));
+    const tokens = await setAccessToken(user.id, inputTokens.refreshToken);
+    await setAuthTokensToCookies(res, tokens);
+    // await setAuthTokens(res, user);
+    return res.status(200).json(await removeSensitiveData(user));
     
   } catch (error) {
     return res.status(400).json(errorMessageObj("Invalid data"));
