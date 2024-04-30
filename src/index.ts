@@ -4,7 +4,7 @@ import app from "./app";
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { agenda } from "./config/agendaConfig";
+import { agenda, sendEventReminderJob } from "./config/agendaConfig";
 
 const MONGODB_URI = process.env.MONGODB_URI || '';
 
@@ -12,7 +12,7 @@ export const mongooseInstancePromise = mongoose.connect(MONGODB_URI);
 
 async function main() {
 
-  if (!MONGODB_URI) {
+  if (!MONGODB_URI || MONGODB_URI.length == 0) {
     console.log("MongoDB URI is not set in the enviroment - ending server");
     return;
   }
@@ -20,7 +20,8 @@ async function main() {
   await mongooseInstancePromise;
   const port = process.env.PORT || 5000;
   await agenda.start();
-  await agenda.schedule('every 1 minute', 'send event reminder');
+  await agenda.schedule('every 5 minutes', 'send event reminder');
+  sendEventReminderJob();
 
   app.listen(port, () => {
     /* eslint-disable no-console */

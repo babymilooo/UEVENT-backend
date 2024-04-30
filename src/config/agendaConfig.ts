@@ -8,22 +8,30 @@ const MONGODB_URI = process.env.MONGODB_URI || "";
 
 export const agenda = new Agenda({ db: { address: MONGODB_URI } });
 
-agenda.define("send event reminder", async (job) => {
+export const sendEventReminderJob = async () => {
+  // console.log('job');
+  
   const now = new Date();
-  const dayBefore = new Date(now.getTime() - 1000 * 60 * 60 * 24);
+  const dayTomorrow = new Date(now.getTime() + 1000 * 60 * 60 * 24);
+  // console.log(dayTomorrow);
+  
   const events = await Event.find({
-    isOver: false,
     reminderSent: false,
     date: {
-      $gte: dayBefore,
-      $lt: now,
+      $gte: now,
+      $lt: dayTomorrow,
     },
   }).exec();
-  const eventIds = events.map((e) => e._id);
+  // console.log(events);
+  
+  const eventIds = events.map((e) => e._id.toString());
+  // console.log(eventIds);
+  
   const tickets = await Ticket.find({ isUsed: false, event: { $in: eventIds } })
     .populate("event")
     .exec();
-
+  // console.log(tickets);
+  
   const groupedTickets = tickets.reduce((groups: any, ticket) => {
     const eventId = ticket.event._id.toString(); // Get the eventId as a string
     groups[eventId] = groups[eventId] || [];
@@ -50,4 +58,6 @@ agenda.define("send event reminder", async (job) => {
       });
     }
   }
-});
+}
+
+agenda.define("send event reminder", sendEventReminderJob);
