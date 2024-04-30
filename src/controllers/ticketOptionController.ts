@@ -72,7 +72,6 @@ export async function createTicketOptionController(
 
     const stripeProduct = await stripeApi.products.create({
       name: `Ticket ${name}`,
-      description: description ? description : "",
       metadata: objDataToString(data),
       default_price_data: {
         currency: "USD",
@@ -138,7 +137,7 @@ export async function updateTicketOptionController(
       //update stripe price if needed
       const priceId = stripeProduct.default_price as string;
       if (updateData.price && priceId) {
-        
+
         //create new price
         const newPrice = await stripeApi.prices.create({
           currency: 'USD',
@@ -155,7 +154,7 @@ export async function updateTicketOptionController(
       }
     }
     const sanitizedData = removeUndefKeys({ name, price, description });
-    
+
     await ticketOption.updateOne(sanitizedData);
     return res.json(await findTicketOption(ticketOption._id));
   } catch (error) {
