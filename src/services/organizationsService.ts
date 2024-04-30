@@ -5,6 +5,7 @@ import { IOrganizationDto, IOrganizationUpdateDto }  from "../types/organization
 import mongoose, { Types } from 'mongoose';
 import { emailRegex } from "../helpers/emailRegex";
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import { modifyMultipleEntityPaths } from "../helpers/updateAndDeleteImage";
 
 export async function createNewOrganization(orgDTO: IOrganizationDto, userId: string) {
   try {
@@ -109,11 +110,17 @@ export async function deleteOrganization(orgId: string) {
 }
 
 export async function getEventsByIdOrganization(orgId: string, skip: number, limit: number) {
-  return await Event.find({ organizationId: orgId })
-                            .sort({ date: 1 })
-                            .skip(skip)
-                            .limit(limit);
+  const [events, totalItems] = await Promise.all([
+    Event.find({ organizationId: orgId })
+         .sort({ date: 1 })
+         .skip(skip)
+         .limit(limit),
+    Event.countDocuments({ organizationId: orgId })
+  ]);
+
+  return { events, totalItems };
 }
+
 
 export async function getOrganizations(query: Record<string, any>, page: number, limit: number) {
   const skip = (page - 1) * limit; 
@@ -155,4 +162,25 @@ export async function findAllOgranizationByCreatedId(userId: string) {
 
 export async function countTotalOrganizations(userId: string) {
   return await Organization.countDocuments({ createdBy: userId });
+}
+
+export async function getOrganizationsForAdmin(page: number, limit:  number, path: string) {
+  const skipIndex = (page - 1) * limit;
+
+  const [results, total] = await Promise.all([
+    Organization.find({ isVerified: false })
+      .sort({ createdAt: 1 }) 
+      .limit(limit)
+      .skip(skipIndex)
+      .exec(),
+    Organization.countDocuments({ isVerified: false })
+  ]);
+
+  const resultsOrg = await modifyMultipleEntityPaths(results, path);
+  return {
+    totalPages: Math.ceil(total / limit),
+    currentPage: page,
+    totalItems: total,
+    organizations: resultsOrg
+  };
 }

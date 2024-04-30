@@ -15,7 +15,8 @@ import {
   addFollowerCount,
   validateContactDetails,
   findOrganizationByName,
-  getOrganizationsByNameAndUserId
+  getOrganizationsByNameAndUserId,
+  getOrganizationsForAdmin
  } from "../services/organizationsService";
 import { IOrganizationUpdateDto, IOrganizationDto } from "../types/organization";
 import { modifyMultipleEntityPaths, modifyEntityPaths } from "../helpers/updateAndDeleteImage";
@@ -151,17 +152,30 @@ export async function getEventsByOrganization(req:  Request, res: Response) {
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
-    const eventsOld = await getEventsByIdOrganization(orgId, skip, limit);
-    for (const e of eventsOld) {
+    const {events, totalItems} = await getEventsByIdOrganization(orgId, skip, limit);
+    for (const e of events) {
       await e.populate('ticketOptions');
     }
 
-    const events: any = eventsOld.map(event => {
+    const eventsNew: any = events.map(event => {
       const eventData = event.toObject({ virtuals: true }); 
       return eventData;
     });
-    
-    res.status(200).json(await modifyMultipleEntityPaths(events, EVENT_URL));
+
+    const resEvents = await modifyMultipleEntityPaths(eventsNew, EVENT_URL);
+    const totalPages = Math.ceil(totalItems / limit);
+    console.log(
+      {
+        events: resEvents,
+        totalItems,
+        totalPages
+      }
+    )
+    res.status(200).json({
+      events: resEvents,
+      totalItems,
+      totalPages
+    });
   } catch (error) {
     if (error instanceof Error) 
       res.status(500).json(errorMessageObj(error.message));
@@ -221,14 +235,25 @@ export async function searchOrganizationsByNameAndUser(req: Request, res: Respon
     const limit = parseInt(req.query.limit as string) || 10;
 
     if (!userId) 
-      return res.status(400).json({ message: "User ID is required for search." });
+      return res.status(400).json(errorMessageObj("User ID is required for search." ));
 
     const organizations = await getOrganizationsByNameAndUserId(name, userId, minFollowerCount, createdBefore, createdAfter, sortOrder, page, limit);
     res.status(200).json(await modifyMultipleEntityPaths(organizations, ORG_URL));
   } catch (error) {
     if (error instanceof Error) 
-      res.status(500).json({ message: error.message });
+      res.status(500).json(errorMessageObj(error.message));
     else
-      res.status(500).json({ message: "Error loading organization data" });
+      res.status(500).json(errorMessageObj("Error loading organization data"));
+  }
+}
+
+export async function getUnverifiedOrganizations(req: Request | any, res: Response) {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    res.status(200).json(await getOrganizationsForAdmin(page, limit, ORG_URL));
+  } catch (error) {
+    res.status(500).json(errorMessageObj("Server error"));
   }
 }

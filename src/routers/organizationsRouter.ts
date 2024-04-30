@@ -9,7 +9,8 @@ import {
   getEventsByOrganization,
   getMyOrganizations,
   getOrganizationsIFollow,
-  searchOrganizationsByNameAndUser
+  searchOrganizationsByNameAndUser,
+  getUnverifiedOrganizations
  } from "../controllers/organizationsController";
 import { authGuard } from "../helpers/authGuard";
 import { refreshTokenMiddleware } from "../helpers/refreshTokenMiddleware";
@@ -32,5 +33,6 @@ organizationRouter.get("/get-my-organizations-followed", authGuard, refreshToken
 organizationRouter.get("/search-my-organizations", authGuard, refreshTokenMiddleware, searchOrganizationsByNameAndUser);
 organizationRouter.get("/get-events/:orgId", getEventsByOrganization);
 organizationRouter.delete("/delete-organization/:orgId", authGuard, refreshTokenMiddleware, deleteOrganizationAndEvents);
+organizationRouter.get("/get-unverified-organizations", adminAuthGuard, refreshTokenMiddleware, getUnverifiedOrganizations);
 
 export { organizationRouter};
