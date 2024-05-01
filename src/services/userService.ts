@@ -12,6 +12,7 @@ import {
   deleteAllEventsByOrganization, 
   deleteOrganization 
 } from "./organizationsService";
+import { passwordRegex } from "../helpers/passwordRegex";
 
 export async function createHashPassword(password: string): Promise<string> {
   if (new TextEncoder().encode(password).length > 72) {

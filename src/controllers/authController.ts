@@ -33,6 +33,7 @@ import {
 } from "../services/emailService";
 import { JwtPayload } from "jsonwebtoken";
 import { generateAvatarPath } from "../services/userService";
+import { passwordRegex } from "../helpers/passwordRegex";
 
 const FRONTEND_URL = process.env.FRONTEND_URL;
 
@@ -74,6 +75,8 @@ export async function login(req: Request, res: Response) {
 export async function register(req: Request, res: Response) {
   try {
     const registerInfo: IRegisterDto = req.body;
+    if (!registerInfo.password.trim().match(passwordRegex)) 
+      return res.status(400).json(errorMessageObj('Passwords must be at least 8 characters long, have 1 letter and 1 number and no whitespaces'));
     await createUser(registerInfo);
     return res.sendStatus(201);
   } catch (error) {
@@ -223,6 +226,8 @@ export async function resetPasswordController(req: Request, res: Response) {
       return res.status(400).json(errorMessageObj("Token is required"));
     if (!password)
       return res.status(400).json(errorMessageObj("Password is required"));
+    if (!password.trim().match(passwordRegex)) 
+      return res.status(400).json(errorMessageObj('Passwords must be at least 8 characters long, have 1 letter and 1 number and no whitespaces'));
     let data: JwtPayload = {};
     try {
       data = await verifyToken(ETokenType.PasswordReset, token);

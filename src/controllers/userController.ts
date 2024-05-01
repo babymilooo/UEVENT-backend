@@ -13,7 +13,9 @@ import { updateFile, removeSingleFile } from "../helpers/updateAndDeleteImage";
 import { IUserUpdateDto } from "../types/user";
 import { sendVerificationEmail } from "../services/emailService";
 import { deleteUserAndAssociations } from "../services/userService";
-import { deleteAuthTokensFromCookies } from "../services/tokenService";
+import { deleteAuthTokensFromCookies, invalidateRefreshToken } from "../services/tokenService";
+import { IAuthTokens } from "../types/token";
+import { passwordRegex } from "../helpers/passwordRegex";
 
 export async function updateProfile(req: Request, res: Response) {
   try {
@@ -47,12 +49,18 @@ export async function changePassword(req: Request, res: Response) {
     const currentUser = await findUserById(userId);
     if (!currentPassword || !newPassword)
       return res.status(400).json(errorMessageObj("Current password and New password are required."));
+    if (!(newPassword as string).trim().match(passwordRegex)) 
+      return res.status(400).json(errorMessageObj('Passwords must be at least 8 characters long, have 1 letter and 1 number and no whitespaces'));
 
     if (currentUser.passwordHash && bcrypt.compareSync(currentPassword, currentUser.passwordHash)) {
       const passwordHash = await createHashPassword(newPassword);
       currentUser.passwordHash = passwordHash;
       await currentUser.save();
-      res.status(200).json(errorMessageObj("Password successfully changed."));
+
+      await deleteAuthTokensFromCookies(res);
+      invalidateRefreshToken((req as Request & { tokens:IAuthTokens }).tokens.refreshToken);
+
+      return res.status(200).json(errorMessageObj("Password successfully changed."));
     } else
       return res
         .status(403)
