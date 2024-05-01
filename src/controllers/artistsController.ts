@@ -3,7 +3,10 @@ import { Request, Response } from "express";
 import {
   handleSpotifyClientCredentials,
   getAllFollowedArtists,
-  isUserRegisteredThroughSpotify
+  isUserRegisteredThroughSpotify,
+  addArtistToUser,
+  checkIfUserFollowingArtist,
+  handleFollowUnfollow
 } from "../services/artistService";
 import { spotifyApi } from "../config/spotifyConfig";
 import { updateAccessTokenForUser } from "../services/tokenService";
@@ -128,5 +131,39 @@ export async function getAllFollowedArtistsSpotify(
     } catch (refreshError) {
       res.status(500).json(errorMessageObj("Failed to refresh access token"));
     }
+  }
+}
+
+export async function followArtist(
+  req: Request,
+  res: Response
+) {
+  const userId = (req as any).userId as string;
+  const artistId = req.params.artistId;
+  try {
+    const registeredThroughSpotify = await isUserRegisteredThroughSpotify(userId);
+    if (!registeredThroughSpotify) {
+      await addArtistToUser(userId, artistId); 
+      res.sendStatus(200);
+      return;
+    }
+    const { access_token_spotify } = req.cookies;
+    spotifyApi.setAccessToken(access_token_spotify);
+    await handleFollowUnfollow(userId, artistId, spotifyApi, res);
+    res.sendStatus(200);
+  } catch (error) {
+    if (await isUserRegisteredThroughSpotify(userId)) {
+    try {
+      const refreshed = await updateAccessTokenForUser(userId, spotifyApi, res);
+      if (refreshed) {
+        const { access_token_spotify } = req.cookies;
+        spotifyApi.setAccessToken(access_token_spotify);
+        await handleFollowUnfollow(userId, artistId, spotifyApi, res);
+      } else
+        throw new Error('Token refresh failed');
+    } catch (refreshError) {
+      res.status(500).json(errorMessageObj("Failed to refresh access token"));
+    }
+  }
   }
 }
