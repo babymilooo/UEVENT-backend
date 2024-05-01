@@ -4,17 +4,30 @@ import { findUserByEmail, findUserById } from "../services/userService";
 import { findEventById } from "../services/eventsService";
 import { Ticket } from "../models/tickets";
 import { ITicketCreateDto } from "../types/ticket";
-import { deleteTicketById, findTicketById, findTicketsByOwnerEmail } from "../services/ticketService";
+import {
+  deleteTicketById,
+  findTicketById,
+  findTicketsByOwnerEmail,
+} from "../services/ticketService";
 import { sendTicketToOwnerAsPDF } from "../services/emailService";
 import { findTicketOption } from "../services/ticketOptionService";
 
 export async function createTicketController(req: Request, res: Response) {
   try {
-    const { ticketOptionId, ownerEmail, ownerName } = req.body as ITicketCreateDto;
-    if (!ticketOptionId || !ownerEmail || !ownerName) return res.status(400).json(errorMessageObj('ticketOptionIdId, ownerEmail and ownerName are required'));
+    const { ticketOptionId, ownerEmail, ownerName } =
+      req.body as ITicketCreateDto;
+    if (!ticketOptionId || !ownerEmail || !ownerName)
+      return res
+        .status(400)
+        .json(
+          errorMessageObj(
+            "ticketOptionIdId, ownerEmail and ownerName are required"
+          )
+        );
     const registeredUser = await findUserByEmail(ownerEmail.trim());
-    const ticketOption = await findTicketOption(ticketOptionId)
-    if (!ticketOption) return res.status(404).json(errorMessageObj('Event not found'));
+    const ticketOption = await findTicketOption(ticketOptionId);
+    if (!ticketOption)
+      return res.status(404).json(errorMessageObj("Event not found"));
     try {
       if (registeredUser) {
         const ticket = new Ticket({
@@ -23,20 +36,19 @@ export async function createTicketController(req: Request, res: Response) {
           ownerEmail: ownerEmail.trim(),
           ownerName,
           price: ticketOption.price,
-          category: 'Ticket',
+          category: "Ticket",
           isUsed: false,
         });
         await ticket.save();
         sendTicketToOwnerAsPDF(ticket).catch(() => {});
         return res.json(ticket.toObject());
-      }
-      else {
+      } else {
         const ticket = new Ticket({
           event: ticketOption.event,
           ownerEmail: ownerEmail.trim(),
           ownerName,
           price: ticketOption.price,
-          category: 'Ticket',
+          category: "Ticket",
           isUsed: false,
         });
         await ticket.save();
@@ -45,12 +57,11 @@ export async function createTicketController(req: Request, res: Response) {
       }
     } catch (error) {
       console.error(error);
-      return res.status(400).json(errorMessageObj('Wrong email format'));
+      return res.status(400).json(errorMessageObj("Wrong email format"));
     }
-    
   } catch (error) {
     console.error(error);
-    return res.status(500).json(errorMessageObj('Server Error'));
+    return res.status(500).json(errorMessageObj("Server Error"));
   }
 }
 
@@ -60,21 +71,23 @@ export async function deleteTicketController(req: Request, res: Response) {
     await deleteTicketById(ticketId);
     return res.sendStatus(200);
   } catch (error) {
-    return res.status(404).json(errorMessageObj('Ticket not found'));
+    return res.status(404).json(errorMessageObj("Ticket not found"));
   }
 }
 
 export async function getTicketsByEmailController(req: Request, res: Response) {
   try {
     const { email } = req.query as { email: string };
-    if (!email)  return res.status(400).json(errorMessageObj('email is required'));
-    
+    if (!email)
+      return res.status(400).json(errorMessageObj("email is required"));
+
     const tickets = await findTicketsByOwnerEmail(email);
-    if (!tickets) return res.status(404).json(errorMessageObj('Tickets2 not found'));
+    if (!tickets)
+      return res.status(404).json(errorMessageObj("Tickets2 not found"));
     return res.json(tickets);
   } catch (error) {
     console.error(error);
-    return res.status(404).json(errorMessageObj('Tickets1 not found'));
+    return res.status(404).json(errorMessageObj("Tickets1 not found"));
   }
 }
 
@@ -82,23 +95,25 @@ export async function getTicketByIdController(req: Request, res: Response) {
   try {
     const { ticketId } = req.params;
     const ticket = await findTicketById(ticketId);
-    if (!ticket) return res.status(404).json(errorMessageObj('Ticket not found'));
+    if (!ticket)
+      return res.status(404).json(errorMessageObj("Ticket not found"));
     return res.json(ticket);
   } catch (error) {
     console.error(error);
-    return res.status(404).json(errorMessageObj('Ticket not found'));
+    return res.status(404).json(errorMessageObj("Ticket not found"));
   }
 }
 
-export async function getMyTickets(req: Request, res:Response) {
+export async function getMyTickets(req: Request, res: Response) {
   try {
-    const { userId } = req as Request & {userId: string};
+    const { userId } = req as Request & { userId: string };
     const user = await findUserById(userId);
-    if (!user) return res.status(404).json(errorMessageObj('User not found'));
-    const tickets = await Ticket.find({ownerEmail: user.email}).exec();
+    if (!user) return res.status(404).json(errorMessageObj("User not found"));
+    const tickets = await Ticket.find({ ownerEmail: user.email })
+      .populate(["ticketOption", "event"])
+      .exec();
     return res.json(tickets);
-
   } catch (error) {
-    return res.status(404).json(errorMessageObj('Not found'));
+    return res.status(404).json(errorMessageObj("Not found"));
   }
 }
