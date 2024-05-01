@@ -48,18 +48,16 @@ export async function createTicketOptionController(
 ) {
   try {
     const data = req.body as ITicketOptionDto;
-    const { event, name, price, description } = data;
+    const { event, name, price, quantity } = data;
     if (
       !event ||
       !name ||
       !price ||
-      typeof event !== "string" ||
-      typeof name !== "string" ||
-      typeof price !== "number"
+      !quantity
     )
       return res
         .status(400)
-        .json(errorMessageObj("event, name and price are required"));
+        .json(errorMessageObj("event, name and price, quantity are required"));
 
     const eventObj = await findEventById(event);
     if (!eventObj) return res.status(404).json("Event not found");
