@@ -117,6 +117,7 @@ export async function getEventById(req: Request, res: Response) {
     if (!org.isVerified) 
       throw new Error("Only verified organisations can view event"); 
 
+    await event.populate('ticketOptions');
     const respData = event.toObject({ virtuals: true });
     res.status(200).json(await modifyEntityPaths(respData, EVENT_URL));
   } catch (error) {
