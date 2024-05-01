@@ -77,9 +77,10 @@ export async function updateEventController(req: Request | any, res: Response) {
     const userId = req.userId;
     const event = await checkEventOrganization(eventId, userId);
     
-    const updatedEvent = await updateEvent(event._id, data);
-    await updatedEvent.populate('ticketOptions');
-    const respData = updatedEvent.toObject({ virtuals: true });
+    const updatedEventTemp = await updateEvent(event._id, data);
+    const eventUpdated = await modifyEntityPaths(updatedEventTemp, EVENT_URL);
+    await eventUpdated.populate('ticketOptions');
+    const respData = eventUpdated.toObject({ virtuals: true });
     return res.json(respData);
   } catch (error) {
     console.error(error);
