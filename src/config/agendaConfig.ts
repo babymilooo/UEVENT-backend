@@ -38,7 +38,7 @@ export const sendEventReminderJob = async () => {
     groups[eventId].push(ticket);
     return groups;
   }, {});
-  console.log(groupedTickets);
+  // console.log(groupedTickets);
   
   for (const eventId in groupedTickets) {
     if (Object.prototype.hasOwnProperty.call(groupedTickets, eventId)) {
