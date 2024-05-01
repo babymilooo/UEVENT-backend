@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { errorMessageObj } from "../helpers/errorMessageObj";
-import { findUserByEmail } from "../services/userService";
+import { findUserByEmail, findUserById } from "../services/userService";
 import { findEventById } from "../services/eventsService";
 import { Ticket } from "../models/tickets";
 import { ITicketCreateDto } from "../types/ticket";
@@ -87,5 +87,18 @@ export async function getTicketByIdController(req: Request, res: Response) {
   } catch (error) {
     console.error(error);
     return res.status(404).json(errorMessageObj('Ticket not found'));
+  }
+}
+
+export async function getMyTickets(req: Request, res:Response) {
+  try {
+    const { userId } = req as Request & {userId: string};
+    const user = await findUserById(userId);
+    if (!user) return res.status(404).json(errorMessageObj('User not found'));
+    const tickets = await Ticket.find({ownerEmail: user.email}).exec();
+    return res.json(tickets);
+
+  } catch (error) {
+    return res.status(404).json(errorMessageObj('Not found'));
   }
 }
