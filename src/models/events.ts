@@ -77,6 +77,10 @@ const eventSchema = new Schema<ISchemaEvent>({
     countryCode: {
       type: String,
       default: ""
+    },
+    address: {
+      type: String,
+      default: ""
     }
   },
   picture: {

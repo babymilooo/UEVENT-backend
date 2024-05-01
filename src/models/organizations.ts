@@ -47,6 +47,10 @@ const organizationSchema = new Schema<IShemaOrganization>({
     longitude: {
       type: String,
       default: ""
+    },
+    address: {
+      type: String,
+      default: ""
     }
   },
   isVerified: { 
