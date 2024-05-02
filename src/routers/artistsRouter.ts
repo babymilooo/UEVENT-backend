@@ -5,7 +5,8 @@ import {
   getArtistById,
   getArtistsByIds,
   getArtistTopTracks,
-  followArtist
+  followArtist,
+  getRelatedArtist
 } from "../controllers/artistsController";
 import { authGuard } from "../helpers/authGuard";
 import { refreshTokenMiddleware } from "../helpers/refreshTokenMiddleware";
@@ -18,4 +19,5 @@ artistRouter.get("/get-artist/:artistId", getArtistById);
 artistRouter.get("/get-artist-songs/:artistId", getArtistTopTracks);
 artistRouter.post("/get-artists", getArtistsByIds);
 artistRouter.get("/follow-artist/:artistId", authGuard, refreshTokenMiddleware, followArtist);
+artistRouter.get("/get-related-artists/:artistId",  getRelatedArtist);
 export { artistRouter};
