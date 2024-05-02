@@ -88,5 +88,6 @@ export async function handleFollowUnfollow(userId: string, artistId: string, spo
     await spotifyApi.unfollowArtists([artistId]);
   else
     await spotifyApi.followArtists([artistId]);
+
   res.sendStatus(200);
 }
