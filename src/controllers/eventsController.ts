@@ -12,7 +12,8 @@ import {
   toggleAttendee,
   getEventsForAttendee,
   getEventsByCountry,
-  getEventsUserWithFavouriteArtists
+  getEventsUserWithFavouriteArtists,
+  getEventsByIDartist
 } from "../services/eventsService";
 import { findUserById } from "../services/userService";
 import { getTicketOptionsOfEvent } from "../services/ticketOptionService";
@@ -240,6 +241,17 @@ export async function getEventsWithFavoriteArtists(req: Request | any, res: Resp
       }
     }
   }
+}
+
+export async function getEventsByArtistId(req: Request, res: Response) {
+  try {
+    const artistId = req.params.artistId;
+    const events = await getEventsByIDartist(artistId);
+    res.status(200).json(events);
+  } catch {
+    res.status(500).json(errorMessageObj("Failed to get events"));
+  }
+
 }
 
 //TODO
