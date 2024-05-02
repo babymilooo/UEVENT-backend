@@ -247,7 +247,7 @@ export async function getEventsByArtistId(req: Request, res: Response) {
   try {
     const artistId = req.params.artistId;
     const events = await getEventsByIDartist(artistId);
-    res.status(200).json(events);
+    res.status(200).json(await modifyMultipleEntityPaths(events, EVENT_URL));
   } catch {
     res.status(500).json(errorMessageObj("Failed to get events"));
   }
