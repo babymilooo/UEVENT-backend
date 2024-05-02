@@ -14,7 +14,7 @@ export interface IShemaOrganization {
     longitude: string;
   };
   isVerified: boolean; 
-  followers: Types.ObjectId[]; 
+  followers?: Types.ObjectId[]; 
   picture?: string;
   logo?: string;
 }
