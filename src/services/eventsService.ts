@@ -74,10 +74,10 @@ export async function checkEventOrganization(eventId: string, userId: string) {
 
 
 export async function toggleAttendee(event: any, userId: string) {
-  if (event.attendees.some((id: any) => id.toString() === userId))
-    event.attendees = event.attendees.filter((id: any) => id.toString() !== userId);
+  if (event.followers.some((id: any) => id.toString() === userId))
+    event.followers = event.followers.filter((id: any) => id.toString() !== userId);
   else
-    event.attendees.push(new mongoose.Types.ObjectId(userId));
+    event.followers.push(new mongoose.Types.ObjectId(userId));
 
   await event.save();
   return event;
