@@ -6,7 +6,8 @@ import {
   isUserRegisteredThroughSpotify,
   addArtistToUser,
   checkIfUserFollowingArtist,
-  handleFollowUnfollow
+  handleFollowUnfollow,
+  fetchArtistById
 } from "../services/artistService";
 import { spotifyApi } from "../config/spotifyConfig";
 import { updateAccessTokenForUser } from "../services/tokenService";
@@ -42,19 +43,15 @@ export async function getArtistById(req: Request, res: Response) {
     if (!artistId)
       return res.status(400).json(errorMessageObj("Artist ID is not provided"));
 
-    const access_token = await handleSpotifyClientCredentials(spotifyApi);
-    if (!access_token)
-      return res
-        .status(500)
-        .json(errorMessageObj("Failed to retrieve access token"));
-
-    spotifyApi.setAccessToken(access_token);
-
-    const result = await spotifyApi.getArtist(artistId);
-    if (result.body) res.status(200).json(result.body);
-    else res.status(404).json(errorMessageObj("Artist not found"));
+    const result = await fetchArtistById(artistId);
+    res.status(200).json(result);
+    // if (result.body) res.status(200).json(result.body);
+    // else res.status(404).json(errorMessageObj("Artist not found"));
   } catch (error) {
-    res.status(500).json(errorMessageObj("Error fetching artist by ID"));
+    if (error instanceof Error) 
+      res.status(500).json(errorMessageObj(error.message));
+    else
+      res.status(500).json(errorMessageObj("Error fetching artist by ID"));
   }
 }
 
@@ -153,17 +150,17 @@ export async function followArtist(
     res.sendStatus(200);
   } catch (error) {
     if (await isUserRegisteredThroughSpotify(userId)) {
-    try {
-      const refreshed = await updateAccessTokenForUser(userId, spotifyApi, res);
-      if (refreshed) {
-        const { access_token_spotify } = req.cookies;
-        spotifyApi.setAccessToken(access_token_spotify);
-        await handleFollowUnfollow(userId, artistId, spotifyApi, res);
-      } else
-        throw new Error('Token refresh failed');
-    } catch (refreshError) {
-      res.status(500).json(errorMessageObj("Failed to refresh access token"));
+      try {
+        const refreshed = await updateAccessTokenForUser(userId, spotifyApi, res);
+        if (refreshed) {
+          const { access_token_spotify } = req.cookies;
+          spotifyApi.setAccessToken(access_token_spotify);
+          await handleFollowUnfollow(userId, artistId, spotifyApi, res);
+        } else
+          throw new Error('Token refresh failed');
+      } catch (refreshError) {
+        res.status(500).json(errorMessageObj("Failed to refresh access token"));
+      }
     }
-  }
   }
 }

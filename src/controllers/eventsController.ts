@@ -11,11 +11,18 @@ import {
   updateEvent,
   toggleAttendee,
   getEventsForAttendee,
-  getEventsByCountry
+  getEventsByCountry,
+  getEventsUserWithFavouriteArtists
 } from "../services/eventsService";
+import { findUserById } from "../services/userService";
 import { getTicketOptionsOfEvent } from "../services/ticketOptionService";
 import { checkEventOrganization } from "../services/eventsService";
 import { modifyMultipleEntityPaths, modifyEntityPaths } from "../helpers/updateAndDeleteImage";
+import { isUserRegisteredThroughSpotify } from "../services/artistService";
+import { spotifyApi } from "../config/spotifyConfig";
+import { getAllFollowedArtists } from "../services/artistService";
+import { updateAccessTokenForUser } from "../services/tokenService";
+
 const EVENT_URL = process.env.EVENT_URL || "/static/event/";
 
 export async function getTicketOptionsOfEventController(
@@ -197,6 +204,43 @@ export async function getEventsByCountryAndSearch(req: Request | any, res: Respo
   }
 }
 
+
+export async function getEventsWithFavoriteArtists(req: Request | any, res: Response) {
+  const userId = req.userId;
+  try {
+    const user = await findUserById(userId);
+    const registeredThroughSpotify = await isUserRegisteredThroughSpotify(userId);
+    let artists;
+    if (!registeredThroughSpotify) 
+      artists = user.artists || [];
+    else {
+      const { access_token_spotify } = req.cookies;
+      spotifyApi.setAccessToken(access_token_spotify);
+      const spotifyArtists = await getAllFollowedArtists(spotifyApi);
+      artists = spotifyArtists.map(artist => artist.name);
+    }
+
+    const events = await getEventsUserWithFavouriteArtists(artists);
+    res.status(200).json(events);
+  } catch (error) {
+    if (await isUserRegisteredThroughSpotify(userId)) {
+      try {
+        const refreshed = await updateAccessTokenForUser(userId, spotifyApi, res);
+        if (refreshed) {
+          const { access_token_spotify } = req.cookies;
+          spotifyApi.setAccessToken(access_token_spotify);
+          const spotifyArtists = await getAllFollowedArtists(spotifyApi);
+          const artists = spotifyArtists.map(artist => artist.name);
+          const events = await getEventsUserWithFavouriteArtists(artists);
+          res.status(200).json(events);
+        } else
+          throw new Error('Token refresh failed');
+      } catch (refreshError) {
+        res.status(500).json(errorMessageObj("Failed to refresh access token"));
+      }
+    }
+  }
+}
 
 //TODO
 // export async function getAllEventsController(req: Request , res: Response) {

@@ -1,11 +1,23 @@
 import { findUserById } from "./userService";
 import { User } from "../models/user";
+import { spotifyApi } from "../config/spotifyConfig";
 
 export async function handleSpotifyClientCredentials(spotifyApi: any) {
   const data = await spotifyApi.clientCredentialsGrant();
   const accessToken = data.body.access_token
   spotifyApi.setAccessToken(accessToken);
   return accessToken;
+}
+
+export async function fetchArtistById(artistId: string) {
+  const access_token = await handleSpotifyClientCredentials(spotifyApi);
+  if (!access_token)
+    throw new Error("Failed to retrieve access token");
+
+  spotifyApi.setAccessToken(access_token);
+
+  const result = await spotifyApi.getArtist(artistId);
+  return result.body;
 }
 
 export async function getAllFollowedArtists(spotifyApi: any) {
@@ -19,7 +31,6 @@ export async function getAllFollowedArtists(spotifyApi: any) {
     }
     return artists;
   } catch (error) {
-
     throw new Error("Failed to fetch followed artists");
   }
 }

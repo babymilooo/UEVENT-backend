@@ -7,6 +7,7 @@ import { findOrganizationById } from "./organizationsService";
 import { objDataToString } from "../helpers/objDataToString";
 import mongoose from 'mongoose';
 import { modifyMultipleEntityPaths } from "../helpers/updateAndDeleteImage";
+import { fetchArtistById } from "./artistService";
 const EVENT_URL = process.env.EVENT_URL || "/static/event/";
 
 export async function findAllEventsOrganisation(
@@ -82,6 +83,7 @@ export async function toggleAttendee(event: any, userId: string) {
   return event;
 }
 
+//count і скільки сторінок буде 
 export async function getEventsForAttendee(userId: string, page: number, limit: number) {
   const skip = (page - 1) * limit;
   return await Event.find({ attendees: userId })
@@ -168,4 +170,31 @@ export async function getEventsByCountry(options: any) {
     console.error('Error fetching events:', error);
     throw error;
   }
+}
+
+
+export async function getEventsUserWithFavouriteArtists(artists: string[]) {
+  const artistEventsArray: any[] = [];
+
+  for (const artist of artists) {
+    const events = await Event.find({
+      artists: artist,
+      hidden: false
+    });
+
+    if (events.length > 0) {
+      const modifiedEvents = await modifyMultipleEntityPaths(events, EVENT_URL);
+      const infoByartist = await fetchArtistById(artist);
+      console.log(infoByartist);
+      artistEventsArray.push({
+        artist: {
+          id: infoByartist.id,       
+          name: infoByartist.name,   
+          images: infoByartist.images[0].url
+        },
+        events: modifiedEvents
+      });
+    }
+  }
+  return artistEventsArray;
 }

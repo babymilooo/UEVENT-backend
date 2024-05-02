@@ -9,7 +9,8 @@ import {
   getEventById,
   addUserToAttendees,
   getEventsForAttendeeByUserId,
-  getEventsByCountryAndSearch
+  getEventsByCountryAndSearch,
+  getEventsWithFavoriteArtists
 } from "../controllers/eventsController";
 
 const eventsRouter = Router();
@@ -39,4 +40,6 @@ eventsRouter.get("/get-event/:eventId", getEventById);
 eventsRouter.get("/toggle-attendee/:eventId", authGuard, refreshTokenMiddleware, addUserToAttendees);
 eventsRouter.get("/events-attendee", authGuard, refreshTokenMiddleware, getEventsForAttendeeByUserId);
 eventsRouter.get("/get-events", getEventsByCountryAndSearch);
+eventsRouter.get("/get-events-with-favourite-artists", authGuard, refreshTokenMiddleware, getEventsWithFavoriteArtists)
+
 export { eventsRouter };
