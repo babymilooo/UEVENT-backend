@@ -103,8 +103,8 @@ export async function getEventsByCountry(options: any) {
   } = options;
 
   const matchStage: any = {};
-  
-  matchStage['location.countryCode'] = countryCode;
+  if (countryCode)
+    matchStage['location.countryCode'] = countryCode;
 
   if (artists && artists.length > 0) {
     matchStage['artists'] = { $in: artists };
