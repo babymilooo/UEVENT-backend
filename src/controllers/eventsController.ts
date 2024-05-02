@@ -217,7 +217,7 @@ export async function getEventsWithFavoriteArtists(req: Request | any, res: Resp
       const { access_token_spotify } = req.cookies;
       spotifyApi.setAccessToken(access_token_spotify);
       const spotifyArtists = await getAllFollowedArtists(spotifyApi);
-      artists = spotifyArtists.map(artist => artist.name);
+      artists = spotifyArtists.map(artist => artist.id);
     }
 
     const events = await getEventsUserWithFavouriteArtists(artists);
@@ -230,7 +230,7 @@ export async function getEventsWithFavoriteArtists(req: Request | any, res: Resp
           const { access_token_spotify } = req.cookies;
           spotifyApi.setAccessToken(access_token_spotify);
           const spotifyArtists = await getAllFollowedArtists(spotifyApi);
-          const artists = spotifyArtists.map(artist => artist.name);
+          const artists = spotifyArtists.map(artist => artist.id);
           const events = await getEventsUserWithFavouriteArtists(artists);
           res.status(200).json(events);
         } else
