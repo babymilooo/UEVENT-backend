@@ -7,7 +7,8 @@ import {
   addArtistToUser,
   checkIfUserFollowingArtist,
   handleFollowUnfollow,
-  fetchArtistById
+  fetchArtistById,
+  getFollowedArtistNotSpotify
 } from "../services/artistService";
 import { spotifyApi } from "../config/spotifyConfig";
 import { updateAccessTokenForUser } from "../services/tokenService";
@@ -136,8 +137,10 @@ export async function getAllFollowedArtistsSpotify(
   try {
     const userId = (req as any).userId as string;
     const registeredThroughSpotify = await isUserRegisteredThroughSpotify(userId);
-    if (!registeredThroughSpotify) 
-      return res.status(200).json([]);
+    if (!registeredThroughSpotify) {
+      const artists = await getFollowedArtistNotSpotify(userId);
+      return res.status(200).json(artists);
+    }
 
     const { access_token_spotify } = req.cookies;
     spotifyApi.setAccessToken(access_token_spotify);
