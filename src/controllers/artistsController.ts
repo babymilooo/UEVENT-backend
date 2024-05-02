@@ -55,6 +55,8 @@ export async function getArtistById(req: Request, res: Response) {
   }
 }
 
+
+
 export async function getArtistTopTracks(req: Request, res: Response) {
   try {
     const artistId = req.params.artistId;
@@ -102,6 +104,28 @@ export async function getArtistsByIds(req: Request, res: Response) {
     else res.status(404).json(errorMessageObj("Artists not found"));
   } catch (error) {
     res.status(500).json(errorMessageObj("Error fetching artists by IDs"));
+  }
+}
+
+export async function getRelatedArtist(req: Request, res: Response) {
+  try {
+    const artistId = req.params.artistId;
+    if (!artistId) {
+      return res.status(400).json(errorMessageObj('Artist ID is not provided'));
+    }
+
+    const access_token = await handleSpotifyClientCredentials(spotifyApi);
+    if (!access_token)
+      return res
+        .status(500)
+        .json(errorMessageObj("Failed to retrieve access token"));
+
+    spotifyApi.setAccessToken(access_token);
+    const relatedArtists = await spotifyApi.getArtistRelatedArtists(artistId);
+    res.status(200).json(relatedArtists.body.artists);
+  } catch (error: any) {
+    console.log(error.message);
+    res.status(500).json(errorMessageObj('Error fetching related artists'));
   }
 }
 
