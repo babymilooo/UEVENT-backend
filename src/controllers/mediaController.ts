@@ -23,7 +23,6 @@ export async function updateOrganizationEventMedia(req: Request | any, res: Resp
       entity = await checkEventOrganization(id, userId);
     else
       return res.status(400).json(errorMessageObj("Invalid entity type."));
-    console.log(entity);
     if (!entity)
       return res.status(404).json(errorMessageObj(`${entityType} not found.`));
     await updateFile(entity, entityType, mediaType, file);

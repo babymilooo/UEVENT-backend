@@ -164,7 +164,6 @@ export async function getEventsByOrganization(req:  Request, res: Response) {
 
     const resEvents = await modifyMultipleEntityPaths(eventsNew, EVENT_URL);
     const totalPages = Math.ceil(totalItems / limit);
-    console.log(resEvents);
     res.status(200).json({
       events: resEvents,
       totalItems,

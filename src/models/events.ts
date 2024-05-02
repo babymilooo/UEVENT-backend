@@ -102,7 +102,6 @@ const eventSchema = new Schema<ISchemaEvent>({
 });
 
 eventSchema.virtual("isOver").get(function () {
-  console.log(this.date, new Date());
   return this.date < new Date();
 });
 

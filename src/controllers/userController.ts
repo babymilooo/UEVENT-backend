@@ -140,7 +140,6 @@ export async function updateAvatar(req: Request, res: Response) {
 export async function getUserInfo(req: Request, res: Response) {
   try {
     const userId = (req as any).userId as string;
-    console.log(userId);
     const user = await findUserById(userId);
     res.status(200).json(await removeSensitiveData(user));
   } catch (error) {

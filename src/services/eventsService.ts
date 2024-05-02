@@ -185,12 +185,12 @@ export async function getEventsUserWithFavouriteArtists(artists: string[]) {
     if (events.length > 0) {
       const modifiedEvents = await modifyMultipleEntityPaths(events, EVENT_URL);
       const infoByartist = await fetchArtistById(artist);
-      console.log(infoByartist);
       artistEventsArray.push({
         artist: {
           id: infoByartist.id,       
           name: infoByartist.name,   
-          images: infoByartist.images[0].url
+          images: infoByartist.images[0].url,
+          followers: infoByartist.followers.total
         },
         events: modifiedEvents
       });

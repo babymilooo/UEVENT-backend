@@ -13,7 +13,6 @@ export async function createNewOrganization(orgDTO: IOrganizationDto, userId: st
       throw new Error("Required fields are missing");
 
     const existingOrg = await findOrganizationByName(orgDTO.name);
-    console.log(existingOrg);
     if (existingOrg && existingOrg.createdBy.toString() === userId) 
       throw new Error("An organization with this name already exists");
 
