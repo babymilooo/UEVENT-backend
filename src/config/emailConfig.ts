@@ -29,7 +29,7 @@ export const emailTransport = createTransport({
 
 export function verificationEmail(backendRoute: string): string {
   return `
-Thank you for choosing UEVENT Music! 
+Thank you for choosing UCODE MUSIC! 
 <br/>
 To complete your registration you have to click on the following link:
 <br/>
@@ -46,7 +46,7 @@ To restore access to your account click on the following link:
 <br/>
 This link is only usable for one hour.
 <br/>
-If you did not try to change your password - contact our support at support@uevent.music immediately!
+If you did not try to change your password - contact our support at support@ucode.music immediately!
     `;
 }
 
@@ -142,7 +142,7 @@ export async function ticketHtml(ticket: ITicket): Promise<string> {
   </head>
   <body>
     <!-- template for easier code writing -->
-    <h1 style="text-align: center">UEVENT MUSIC</h2>
+    <h1 style="text-align: center">UCODE MUSIC</h2>
     <h2 style="text-align: center">Ticket to ${event?.name}</h2>
     <div class="container">
       <svg
