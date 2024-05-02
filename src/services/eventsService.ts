@@ -92,6 +92,12 @@ export async function getEventsForAttendee(userId: string, page: number, limit: 
                     .exec();
 }
 
+export async function getEventsByIDartist(artistId: string){
+  const events = await Event.find({ artists: artistId }).exec();
+  console.log(events);
+  return events; 
+}
+
 export async function getEventsByCountry(options: any) {
   const {
     countryCode,
