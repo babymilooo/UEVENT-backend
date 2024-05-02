@@ -35,6 +35,19 @@ export async function getAllFollowedArtists(spotifyApi: any) {
   }
 }
 
+export async function getFollowedArtistNotSpotify(userid: string) {
+  const user = await findUserById(userid);
+  const artists = user.artists || [];
+  const artistsData = await Promise.all(artists.map(async (artistId) => {
+    try {
+      return await fetchArtistById(artistId);
+    } catch (error) {
+      return null;
+    }
+  }));
+  return artistsData.filter(artist => artist !== null);
+}
+
 export async function isUserRegisteredThroughSpotify(userId: string) {
   try {
     const user = await findUserById(userId);
@@ -45,7 +58,7 @@ export async function isUserRegisteredThroughSpotify(userId: string) {
 }
 
 
-export async function addArtistToUser (userId: string, artistId: string)  {
+export async function addArtistToUser(userId: string, artistId: string)  {
   const user = await findUserById(userId);
   if (user && !user.isRegisteredViaSpotify) {
     user.artists = user.artists || [];
