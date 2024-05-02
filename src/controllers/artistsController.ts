@@ -174,7 +174,7 @@ export async function followArtist(
     const { access_token_spotify } = req.cookies;
     spotifyApi.setAccessToken(access_token_spotify);
     await handleFollowUnfollow(userId, artistId, spotifyApi, res);
-    res.sendStatus(200);
+    return;
   } catch (error) {
     if (await isUserRegisteredThroughSpotify(userId)) {
       try {
@@ -183,11 +183,15 @@ export async function followArtist(
           const { access_token_spotify } = req.cookies;
           spotifyApi.setAccessToken(access_token_spotify);
           await handleFollowUnfollow(userId, artistId, spotifyApi, res);
-        } else
+          return;
+        } else 
           throw new Error('Token refresh failed');
       } catch (refreshError) {
         res.status(500).json(errorMessageObj("Failed to refresh access token"));
-      }
+        return;
+      } 
+    }else {
+      return; 
     }
   }
 }
