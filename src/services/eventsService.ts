@@ -102,7 +102,7 @@ export async function getEventsByCountry(options: any) {
     order
   } = options;
 
-  let matchStage: any = {};
+  const matchStage: any = {};
   
   matchStage['location.countryCode'] = countryCode;
 
