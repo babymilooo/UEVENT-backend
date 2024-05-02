@@ -11,6 +11,7 @@ export interface ISchemaUser {
   spotifyRefreshToken?: string;
   role: string;
   profilePicture?: string;
+  artists?: string[];
 }
 
 const userSchema = new Schema<ISchemaUser>({
@@ -58,7 +59,11 @@ const userSchema = new Schema<ISchemaUser>({
     type: String,
     required: false,
     trim: true,
-  }
+  },
+  artists: [{
+    type: String,
+    default: ""
+  }],
 });
 
 export const User = model<ISchemaUser>("User", userSchema);
