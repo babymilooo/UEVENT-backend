@@ -249,3 +249,22 @@ export async function resetPasswordController(req: Request, res: Response) {
     return res.status(403).json(errorMessageObj(error.message || "Forbidden"));
   }
 }
+
+
+export async function checkAccessToken(req: Request, res: Response) {
+  try {
+    const tokens = extractTokens(req, 2);
+    if (!tokens) return res.status(401).json(errorMessageObj("Not Authorized"));
+    const jwtData: any = await verifyToken(
+      ETokenType.Access,
+      tokens.accessToken
+    );
+
+    if (!jwtData)
+      res.status(401).json(errorMessageObj("Not Authorized")); 
+
+    res.status(200).json(true);
+  } catch (error) {
+    return res.status(401).json(errorMessageObj("Not Authorized"));
+  }
+}

@@ -9,7 +9,8 @@ import {
   verificateEmail,
   sendPasswordResetEmailController,
   resetPasswordController,
-  sendVerificationEmailController
+  sendVerificationEmailController,
+  checkAccessToken
  } from "../controllers/authController";
 import { authGuard } from "../helpers/authGuard";
 
@@ -25,5 +26,6 @@ authRouter.get("/verify-email/:token", verificateEmail);
 authRouter.post("/verify-email/send-email", sendVerificationEmailController);
 authRouter.post("/password-reset/send-email", sendPasswordResetEmailController);
 authRouter.post("/password-reset/:token", resetPasswordController);
+authRouter.get("/check-auth", checkAccessToken);
 
 export { authRouter};

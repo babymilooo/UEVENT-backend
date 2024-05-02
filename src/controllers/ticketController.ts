@@ -11,8 +11,6 @@ import {
 } from "../services/ticketService";
 import { sendTicketToOwnerAsPDF } from "../services/emailService";
 import { findTicketOption } from "../services/ticketOptionService";
-import { modifyEntityPaths } from "../helpers/updateAndDeleteImage";
-const EVENT_URL = process.env.EVENT_URL || "/static/event/";
 
 export async function createTicketController(req: Request, res: Response) {
   try {
@@ -114,11 +112,7 @@ export async function getMyTickets(req: Request, res: Response) {
     const tickets = await Ticket.find({ ownerEmail: user.email })
       .populate(["ticketOption", "event"])
       .exec();
-    const moddedTickets = await Promise.all( tickets.map(async (ticket) => {
-      ticket.event = await modifyEntityPaths(ticket.event, EVENT_URL);
-      return ticket;
-    }));
-    return res.json(moddedTickets);
+    return res.json(tickets);
   } catch (error) {
     return res.status(404).json(errorMessageObj("Not found"));
   }
