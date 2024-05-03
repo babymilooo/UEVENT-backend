@@ -13,6 +13,7 @@ import {
   deleteOrganization 
 } from "./organizationsService";
 import { passwordRegex } from "../helpers/passwordRegex";
+import axios from 'axios';
 
 export async function createHashPassword(password: string): Promise<string> {
   if (new TextEncoder().encode(password).length > 72) {
@@ -31,6 +32,8 @@ export async function createUser(userDto: IUserDto) {
   if (!emailRegex.test(userDto.email)) {
     throw new Error("Email must be valid");
   }
+  if (!userDto.userName)
+    userDto.userName = await getRandomUsername();
 
   const hashPassword = await createHashPassword(userDto.password);
 
@@ -199,3 +202,13 @@ export async function getRefreshTokenForUser(userId: string) {
   return refreshToken; 
 }
 
+export async function getRandomUsername() {
+  try {
+    const response = await axios.get('https://api.namefake.com/');
+    const username = response.data.username;
+    return username;
+  } catch (error) {
+    console.error('Error fetching username:', error);
+    throw error;
+  }
+}
