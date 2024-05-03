@@ -57,3 +57,9 @@ npm run test
 ```
 npm run dev
 ```
+
+## Endpoints
+
+### [Artist Management](https://documenter.getpostman.com/view/33507971/2sA3JFBjrf)
+  
+
