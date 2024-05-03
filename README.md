@@ -61,5 +61,10 @@ npm run dev
 ## Endpoints
 
 ### [Artist Management](https://documenter.getpostman.com/view/33507971/2sA3JFBjrf)
-  
-
+### [Authorization](https://documenter.getpostman.com/view/33507971/2sA3JFBjvz)
+### [Event Management](https://documenter.getpostman.com/view/33507971/2sA3JFBjw1)
+### [Media](https://documenter.getpostman.com/view/29125738/2sA3JFBjw2)
+### [Organization Management](https://documenter.getpostman.com/view/29125738/2sA3JFBjw3)
+### [Ticket Options](https://documenter.getpostman.com/view/33507971/2sA3JFBjw5)
+### [Tickets Management](https://documenter.getpostman.com/view/33507971/2sA3JFBk1M)
+### [User Management](https://documenter.getpostman.com/view/29125738/2sA3JFBk1N)
